@@ -134,7 +134,7 @@ void gpo_port_write_by_mask(gpio_TypeDef* port,const gpio_t data) {
     gpo_port_bset_by_mask(port,data);
 }
 /**
- * Записывает в область порта
+ * 
  * @param port
  * @param data
  */
