@@ -116,6 +116,7 @@ bool gpi_pin_sfd(gpio_TypeDef* port) { //soft fall detectig
 void gpo_port_bset_by_mask(gpio_TypeDef* port,const gpio_t data) {
     port->gpio->BSRRL = (port->gpio_mask & data);
 }
+
 /**
  * Запись в регистр сброса по маске
  * @param port
@@ -124,6 +125,7 @@ void gpo_port_bset_by_mask(gpio_TypeDef* port,const gpio_t data) {
 void gpo_port_brst_by_mask(gpio_TypeDef* port,const gpio_t data) {
     port->gpio->BSRRH = (port->gpio_mask & data);
 }
+
 /**
  * Запись в регистры сброса и установки по маске
  * @param port
@@ -133,6 +135,7 @@ void gpo_port_write_by_mask(gpio_TypeDef* port,const gpio_t data) {
     gpo_port_brst_by_mask(port,~data);
     gpo_port_bset_by_mask(port,data);
 }
+
 /**
  * Запись в область регистров сброса и установки
  * @param port
