@@ -11,7 +11,7 @@
  * Created on 31 января 2018 г., 12:37
  */
 
-#include "gpio.h"
+#include <gpio.h>
 
 /**
  * Устанавливает бит порта по маске
@@ -36,7 +36,8 @@ void gpo_pin_brst(gpio_t* port) {
  * @param port Settable pin
  */
 void gpo_pin_set(gpio_t* port) {
-    port->gpio->ODR |= port->gpio_mask;
+    SET_BIT(port->gpio->ODR,port->gpio_mask);
+    //port->gpio->ODR |= port->gpio_mask;
     port->pin_state = true;
 }
 
@@ -45,7 +46,8 @@ void gpo_pin_set(gpio_t* port) {
  * @param port Resetable pin
  */
 void gpo_pin_rst(gpio_t* port) {
-    port->gpio->ODR &=~ port->gpio_mask;
+    RESET_BIT(port->gpio->ODR,port->gpio_mask);
+    //port->gpio->ODR &=~ port->gpio_mask;
     port->pin_state = false;
 }
 
@@ -54,7 +56,8 @@ void gpo_pin_rst(gpio_t* port) {
  * @param port Invertible pin
  */
 void gpo_pin_tog(gpio_t* port) {
-    port->gpio->ODR ^= port->gpio_mask;
+    TOGGLE_BIT(port->gpio->ODR,port->gpio_mask);
+    //port->gpio->ODR ^= port->gpio_mask;
     port->pin_state = gpo_pin_read(port);
 }
 
@@ -64,7 +67,8 @@ void gpo_pin_tog(gpio_t* port) {
  * @return Pin state
  */
 bool gpo_pin_read(gpio_t* port) {
-    if((port->gpio->ODR & port->gpio_mask) == port->gpio_mask) return true;
+    if(CHECK_BIT_BY_MASK(port->gpio->ODR,port->gpio_mask)) return true;
+    //if((port->gpio->ODR & port->gpio_mask) == port->gpio_mask) return true;
     return false;
 }
 
@@ -74,7 +78,8 @@ bool gpo_pin_read(gpio_t* port) {
  * @return Pin state
  */
 bool gpi_pin_read(gpio_t* port) {
-    if((port->gpio->IDR & port->gpio_mask) == port->gpio_mask) return true;
+    if(CHECK_BIT_BY_MASK(port->gpio->IDR,port->gpio_mask)) return true;
+    //if((port->gpio->IDR & port->gpio_mask) == port->gpio_mask) return true;
     return false;
 }
 
@@ -114,7 +119,8 @@ bool gpi_pin_sfd(gpio_t* port) { //soft fall detectig
  * @param data
  */
 void gpo_port_bset_by_mask(gpio_t* port,const port_t data) {
-    port->gpio->BSRRL = (port->gpio_mask & data);
+    WRITE_REG_BY_MASK(port->gpio->BSRRL,port->gpio_mask,data);
+    //port->gpio->BSRRL = (port->gpio_mask & data);
 }
 
 /**
@@ -123,7 +129,8 @@ void gpo_port_bset_by_mask(gpio_t* port,const port_t data) {
  * @param data
  */
 void gpo_port_brst_by_mask(gpio_t* port,const port_t data) {
-    port->gpio->BSRRH = (port->gpio_mask & data);
+    WRITE_REG_BY_MASK(port->gpio->BSRRH,port->gpio_mask,data);
+    //port->gpio->BSRRH = (port->gpio_mask & data);
 }
 
 /**
@@ -152,7 +159,8 @@ void gpo_port_range_write(gpio_t* port,const port_t data) {
  * @return 
  */
 port_t gpo_port_range_read(gpio_t* port) {
-    port_t data = (port->gpio_mask & (port->gpio->ODR >> port->shift));
+    port_t data = READ_REG_RANGE(port->gpio->ODR,port->gpio_mask,port->shift);
+    //port_t data = (port->gpio_mask & (port->gpio->ODR >> port->shift));
     return data;
 }
 
@@ -162,6 +170,7 @@ port_t gpo_port_range_read(gpio_t* port) {
  * @return 
  */
 port_t gpi_port_range_read(gpio_t* port) {
-    port_t data = (port->gpio_mask & (port->gpio->IDR >> port->shift));
+    port_t data = READ_REG_RANGE(port->gpio->IDR,port->gpio_mask,port->shift);
+    //port_t data = (port->gpio_mask & (port->gpio->IDR >> port->shift));
     return data;
 }
