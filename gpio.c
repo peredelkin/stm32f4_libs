@@ -160,7 +160,7 @@ void gpo_port_range_write(gpio_t* port,const port_t data) {
  */
 port_t gpo_port_range_read(gpio_t* port) {
     port_t data = READ_REG_RANGE(port->gpio->ODR,port->gpio_mask,port->shift);
-    //port_t data = (port->gpio_mask & (port->gpio->ODR >> port->shift));
+    //port_t data = ((port->gpio->ODR & port->gpio_mask) >> port->shift);
     return data;
 }
 
@@ -171,6 +171,6 @@ port_t gpo_port_range_read(gpio_t* port) {
  */
 port_t gpi_port_range_read(gpio_t* port) {
     port_t data = READ_REG_RANGE(port->gpio->IDR,port->gpio_mask,port->shift);
-    //port_t data = (port->gpio_mask & (port->gpio->IDR >> port->shift));
+    //port_t data = ((port->gpio->IDR & port->gpio_mask) >> port->shift);
     return data;
 }

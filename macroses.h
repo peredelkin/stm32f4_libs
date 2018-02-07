@@ -35,7 +35,7 @@
 #endif
 
 #ifndef READ_REG_RANGE
-#define READ_REG_RANGE(REG,MASK,SHIFT) ((MASK) & ((REG) >> (SHIFT)))
+#define READ_REG_RANGE(REG,MASK,SHIFT) (((REG) & (MASK)) >> (SHIFT))
 #endif /* READ_REG_RANGE */
 
 #endif /* MACROSES_H */
