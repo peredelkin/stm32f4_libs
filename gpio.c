@@ -14,6 +14,41 @@
 #include <gpio.h>
 
 /**
+ * Запись состояния
+ * @param port
+ * @param state
+ */
+void gpio_pin_state_write(gpio_t* port,bool state) {
+    port->pin_state = state;
+}
+
+/**
+ * Чтение состояния
+ * @param port
+ * @return 
+ */
+bool gpio_pin_state_read(gpio_t* port) {
+    bool state = port->pin_state;
+    return state;
+}
+
+/**
+ * Установка состояния
+ * @param port
+ */
+void gpio_pin_state_set(gpio_t* port) {
+    gpio_pin_state_write(port,true);
+}
+
+/**
+ * Сброс состояния
+ * @param port
+ */
+void gpio_pin_state_rst(gpio_t* port) {
+    gpio_pin_state_write(port,false);
+}
+
+/**
  * Устанавливает бит порта по маске
  * @param port Settable pin
  */
@@ -90,11 +125,11 @@ bool gpi_pin_read(gpio_t* port) {
  */
 bool gpi_pin_srd(gpio_t* port) { //soft rise detecting
     bool cur_state = gpi_pin_read(port);
-    if(cur_state & ~port->pin_state) {
-        port->pin_state = cur_state;
+    if(cur_state & ~gpio_pin_state_read(port)) {
+        gpio_pin_state_write(port,cur_state);
         return true;
     }
-    port->pin_state = cur_state;
+    gpio_pin_state_write(port,cur_state);
     return false;
 }
 
@@ -105,11 +140,11 @@ bool gpi_pin_srd(gpio_t* port) { //soft rise detecting
  */
 bool gpi_pin_sfd(gpio_t* port) { //soft fall detectig
     bool cur_state = gpi_pin_read(port);
-    if(~cur_state & port->pin_state) {
-        port->pin_state = cur_state;
+    if(~cur_state & gpio_pin_state_read(port)) {
+        gpio_pin_state_write(port,cur_state);
         return true;
     }
-    port->pin_state = cur_state;
+    gpio_pin_state_write(port,cur_state);
     return false;
 }
 

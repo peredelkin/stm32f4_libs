@@ -28,6 +28,14 @@ typedef struct {
 } gpio_t;
 
 
+extern void gpio_pin_state_write(gpio_t* port,bool state);
+
+extern bool gpio_pin_state_read(gpio_t* port);
+
+extern void gpio_pin_state_set(gpio_t* port);
+
+extern void gpio_pin_state_rst(gpio_t* port);
+
 extern void gpo_pin_bset(gpio_t* port);
 
 extern void gpo_pin_brst(gpio_t* port);
