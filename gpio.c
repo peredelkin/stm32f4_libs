@@ -50,7 +50,7 @@ void gpio_pin_state_rst(gpio_t* port) {
 
 /**
  * Устанавливает бит порта по маске
- * @param port Settable pin
+ * @param port: Settable pin
  */
 void gpo_pin_bset(gpio_t* port) {
     port->gpio->BSRRL = port->gpio_mask;
@@ -59,7 +59,7 @@ void gpo_pin_bset(gpio_t* port) {
 
 /**
  * Сбрасывает бит порта по маске
- * @param port Resetable pin
+ * @param port: Resetable pin
  */
 void gpo_pin_brst(gpio_t* port) {
     port->gpio->BSRRH = port->gpio_mask;
@@ -68,7 +68,7 @@ void gpo_pin_brst(gpio_t* port) {
 
 /**
  * Устанавливает бит порта маске
- * @param port Settable pin
+ * @param port: Settable pin
  */
 void gpo_pin_set(gpio_t* port) {
     SET_BIT(port->gpio->ODR,port->gpio_mask);
@@ -78,7 +78,7 @@ void gpo_pin_set(gpio_t* port) {
 
 /**
  * Сбрасывает бит порта по маске
- * @param port Resetable pin
+ * @param port: Resetable pin
  */
 void gpo_pin_rst(gpio_t* port) {
     RESET_BIT(port->gpio->ODR,port->gpio_mask);
@@ -88,7 +88,7 @@ void gpo_pin_rst(gpio_t* port) {
 
 /**
  * Меняет бит порта на противоположный по маске
- * @param port Invertible pin
+ * @param port: Invertible pin
  */
 void gpo_pin_tog(gpio_t* port) {
     TOGGLE_BIT(port->gpio->ODR,port->gpio_mask);
@@ -98,7 +98,7 @@ void gpo_pin_tog(gpio_t* port) {
 
 /**
  * Возвращает состояние бита выхода по маске
- * @param port Readable out pin
+ * @param port: Readable out pin
  * @return Pin state
  */
 bool gpo_pin_read(gpio_t* port) {
@@ -109,7 +109,7 @@ bool gpo_pin_read(gpio_t* port) {
 
 /**
  * Возвращает состояние бита входа по маске
- * @param port Readable in pin
+ * @param port: Readable in pin
  * @return Pin state
  */
 bool gpi_pin_read(gpio_t* port) {
@@ -120,7 +120,7 @@ bool gpi_pin_read(gpio_t* port) {
 
 /**
  * Программное обнаружение переднего фронта бита входа по маске
- * @param port Readable in pin
+ * @param port: Readable in pin
  * @return Rise
  */
 bool gpi_pin_srd(gpio_t* port) { //soft rise detecting
@@ -135,7 +135,7 @@ bool gpi_pin_srd(gpio_t* port) { //soft rise detecting
 
 /**
  * Программное обнаружение заднего фронта бита входа по маске
- * @param port Readable in pin
+ * @param port: Readable in pin
  * @return Fall
  */
 bool gpi_pin_sfd(gpio_t* port) { //soft fall detectig
