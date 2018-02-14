@@ -11,7 +11,7 @@
  * Created on 31 января 2018 г., 12:37
  */
 
-#include <gpio.h>
+#include "gpio.h"
 
 /**
  * Запись состояния
