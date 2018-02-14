@@ -11,7 +11,8 @@
  * Created on 14 февраля 2018 г., 14:50
  */
 
-#include "usart_sr.h"
+#include <usart_sr.h>
+#include <usart.h>
 
 bool usart_sr_pe_read (usart_t* usart) {
     if(CHECK_BIT_BY_MASK(usart->usart->SR,usart->sr_mask->pe)) return 1;

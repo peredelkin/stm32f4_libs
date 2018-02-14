@@ -24,4 +24,15 @@ typedef struct {
     USART_TypeDef* usart;
 }usart_t;
 
+extern bool usart_sr_pe_read (usart_t* usart);
+extern bool usart_sr_fe_read (usart_t* usart);
+extern bool usart_sr_ne_read (usart_t* usart);
+extern bool usart_sr_ore_read (usart_t* usart);
+extern bool usart_sr_idle_read (usart_t* usart);
+extern bool usart_sr_rxne_read (usart_t* usart);
+extern bool usart_sr_tc_read (usart_t* usart);
+extern bool usart_sr_txe_read (usart_t* usart);
+extern bool usart_sr_lbd_read (usart_t* usart);
+extern bool usart_sr_cts_read (usart_t* usart);
+
 #endif /* USART_H */
