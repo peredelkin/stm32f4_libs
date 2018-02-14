@@ -54,3 +54,19 @@ bool usart_sr_cts_read (usart_t* usart) {
     if(CHECK_BIT_BY_MASK(usart->usart->SR,usart->sr_mask->cts)) return 1;
     return 0;
 }
+
+void usart_sr_rxne_rst (usart_t* usart) {
+    RESET_BIT(usart->usart->SR,usart->sr_mask->rxne);
+}
+
+void usart_sr_tc_rst (usart_t* usart) {
+    RESET_BIT(usart->usart->SR,usart->sr_mask->tc);
+}
+
+void usart_sr_lbd_rst (usart_t* usart) {
+    RESET_BIT(usart->usart->SR,usart->sr_mask->lbd);
+}
+
+void usart_sr_cts_rst (usart_t* usart) {
+    RESET_BIT(usart->usart->SR,usart->sr_mask->cts);
+}
