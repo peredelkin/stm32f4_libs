@@ -15,8 +15,6 @@
 #define USART_SR_H
 
 #include <stm32f4xx.h>
-#include <stdbool.h>
-#include <macroses.h>
 
 #define MAKE_USART_SR_MASK {\
     .pe = USART_SR_PE,\
