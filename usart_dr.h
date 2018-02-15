@@ -16,18 +16,4 @@
 
 #include <stm32f4xx.h>
 
-typedef uint16_t usart_dr_type;
-
-typedef struct {
-    const usart_dr_type dr_mask;
-    usart_dr_type* txd;
-    usart_dr_type* rxd;
-    usart_dr_type txd_index;
-    usart_dr_type txd_size;
-    usart_dr_type txd_index_max;
-    usart_dr_type rxd_index;
-    usart_dr_type rxd_size;
-    usart_dr_type rxd_index_max;
-}usart_dr_t;
-
 #endif /* USART_DR_H */

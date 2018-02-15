@@ -21,7 +21,6 @@
 #include <usart_dr.h>
 
 typedef struct {
-    usart_dr_t* trxd;
     const usart_sr_t* sr_mask;
     USART_TypeDef* usart;
 }usart_t;
@@ -45,9 +44,5 @@ extern void usart_sr_tc_rst (usart_t* usart);
 extern void usart_sr_lbd_rst (usart_t* usart);
 extern void usart_sr_cts_rst (usart_t* usart);
 /*-------------------USART TRX Data Register--------------------------*/
-extern void usart_read_dr(usart_t* usart,usart_dr_type *data);
-extern void usart_write_dr(usart_t* usart,usart_dr_type *data);
-extern bool usart_tx_data(usart_t* usart);
-extern bool usart_rx_data(usart_t* usart);
 
 #endif /* USART_H */
