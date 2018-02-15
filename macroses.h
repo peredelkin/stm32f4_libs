@@ -34,6 +34,10 @@
 #define WRITE_REG_BY_MASK(REG,MASK,DATA) ((REG) = ((MASK) & (DATA)))
 #endif
 
+#ifndef READ_REG_BY_MASK
+#define READ_REG_BY_MASK(REG,MASK,DATA) ((DATA) = ((MASK) & (REG)))
+#endif
+
 #ifndef READ_REG_RANGE
 #define READ_REG_RANGE(REG,MASK,SHIFT) (((REG) & (MASK)) >> (SHIFT))
 #endif /* READ_REG_RANGE */

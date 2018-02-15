@@ -29,19 +29,19 @@
     .cts = USART_SR_CTS\
 }
 
-typedef uint16_t usart_sr_mask_type;
+typedef uint16_t usart_sr_type;
 
 typedef struct {
-    usart_sr_mask_type pe;
-    usart_sr_mask_type fe;
-    usart_sr_mask_type ne;
-    usart_sr_mask_type ore;
-    usart_sr_mask_type idle;
-    usart_sr_mask_type rxne;
-    usart_sr_mask_type tc;
-    usart_sr_mask_type txe;
-    usart_sr_mask_type lbd;
-    usart_sr_mask_type cts;
-}usart_sr_mask_t;
+    usart_sr_type pe;
+    usart_sr_type fe;
+    usart_sr_type ne;
+    usart_sr_type ore;
+    usart_sr_type idle;
+    usart_sr_type rxne;
+    usart_sr_type tc;
+    usart_sr_type txe;
+    usart_sr_type lbd;
+    usart_sr_type cts;
+}usart_sr_t;
 
 #endif /* USART_SR_H */

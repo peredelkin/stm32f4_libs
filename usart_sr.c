@@ -14,7 +14,7 @@
 #include <usart_sr.h>
 #include <usart.h>
 
-bool usart_sr_read (usart_t* usart,usart_sr_mask_type sr_mask) {
+bool usart_sr_read (usart_t* usart,usart_sr_type sr_mask) {
     if(CHECK_BIT_BY_MASK(usart->usart->SR,sr_mask)) return 1;
     return 0;
 }
@@ -99,7 +99,7 @@ bool usart_sr_cts_read (usart_t* usart) {
     return usart_sr_read(usart,usart->sr_mask->cts);
 }
 
-void usart_sr_rst(usart_t* usart,usart_sr_mask_type sr_mask) {
+void usart_sr_rst(usart_t* usart,usart_sr_type sr_mask) {
     RESET_BIT(usart->usart->SR,sr_mask);
 }
 

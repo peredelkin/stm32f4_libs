@@ -18,12 +18,16 @@
 #include <stdbool.h>
 #include <macroses.h>
 #include <usart_sr.h>
+#include <usart_dr.h>
 
 typedef struct {
-    const usart_sr_mask_t* sr_mask;
+    usart_dr_t* trxd;
+    const usart_sr_t* sr_mask;
     USART_TypeDef* usart;
 }usart_t;
 
+/*--------------------USART Status Register Reead---------------------*/
+extern bool usart_sr_read (usart_t* usart,usart_sr_type sr_mask);
 extern bool usart_sr_pe_read (usart_t* usart);
 extern bool usart_sr_fe_read (usart_t* usart);
 extern bool usart_sr_ne_read (usart_t* usart);
@@ -34,5 +38,11 @@ extern bool usart_sr_tc_read (usart_t* usart);
 extern bool usart_sr_txe_read (usart_t* usart);
 extern bool usart_sr_lbd_read (usart_t* usart);
 extern bool usart_sr_cts_read (usart_t* usart);
+/*--------------------USART Status Register Reset---------------------*/
+extern void usart_sr_rst(usart_t* usart,usart_sr_type sr_mask);
+extern void usart_sr_rxne_rst (usart_t* usart);
+extern void usart_sr_tc_rst (usart_t* usart);
+extern void usart_sr_lbd_rst (usart_t* usart);
+extern void usart_sr_cts_rst (usart_t* usart);
 
 #endif /* USART_H */
