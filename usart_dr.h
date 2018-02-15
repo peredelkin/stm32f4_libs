@@ -19,7 +19,7 @@
 typedef uint16_t usart_dr_type;
 
 typedef struct {
-    const usart_dr_type trx_mask;
+    const usart_dr_type dr_mask;
     usart_dr_type* txd;
     usart_dr_type* rxd;
     usart_dr_type txd_index;

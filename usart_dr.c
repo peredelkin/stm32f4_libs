@@ -15,10 +15,10 @@
 #include <usart.h>
 
 void usart_read_dr(usart_t* usart,usart_dr_type *data) {
-    READ_REG_BY_MASK(usart->usart->DR,usart->trxd->trx_mask,*data);
+    READ_REG_BY_MASK(usart->usart->DR,usart->trxd->dr_mask,*data);
 }
 void usart_write_dr(usart_t* usart,usart_dr_type *data) {
-    WRITE_REG_BY_MASK(usart->usart->DR,usart->trxd->trx_mask,*data);
+    WRITE_REG_BY_MASK(usart->usart->DR,usart->trxd->dr_mask,*data);
 }
 
 /**
