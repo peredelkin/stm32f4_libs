@@ -12,5 +12,4 @@
  */
 
 #include <usart_dr.h>
-#include <usart.h>
 
