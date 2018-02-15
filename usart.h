@@ -44,5 +44,10 @@ extern void usart_sr_rxne_rst (usart_t* usart);
 extern void usart_sr_tc_rst (usart_t* usart);
 extern void usart_sr_lbd_rst (usart_t* usart);
 extern void usart_sr_cts_rst (usart_t* usart);
+/*-------------------USART TRX Data Register--------------------------*/
+void usart_read_dr(usart_t* usart,usart_dr_type *data);
+void usart_write_dr(usart_t* usart,usart_dr_type *data);
+bool usart_tx_data(usart_t* usart);
+bool usart_rx_data(usart_t* usart);
 
 #endif /* USART_H */
