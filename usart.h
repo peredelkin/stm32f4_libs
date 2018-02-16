@@ -14,5 +14,10 @@
 #ifndef USART_H
 #define USART_H
 
+#include <stm32f4xx.h>
+
+typedef struct {
+    USART_TypeDef* usart;
+} usart_t;
 
 #endif /* USART_H */
