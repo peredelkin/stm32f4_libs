@@ -215,6 +215,11 @@ void usart_cr3_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
     RESET_BIT(usart->usart->CR3,cr_bit);
 }
 
+void usart_gtpr_write(usart_t* usart,usart_brr_t guard_time,usart_brr_t prescaler) {
+    usart->usart->BRR = ((uint16_t)guard_time & USART_GTPR_GT) |
+            ((uint16_t)prescaler & USART_GTPR_PSC);
+}
+
 void usart_standard_init(usart_t* usart) {
     usart_cr1_set_bit(usart,USART_CR1_UE); //USART Enable
     usart_cr1_set_bit(usart,USART_CR1_TE); //TX Enable

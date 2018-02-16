@@ -82,5 +82,7 @@ extern void usart_cr2_reset_bit(usart_t* usart,usart_cr_t cr_bit);
 extern bool usart_cr3_read_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr3_set_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr3_reset_bit(usart_t* usart,usart_cr_t cr_bit);
+/******************  USART_GTPR register Functions ******************/
+void usart_gtpr_write(usart_t* usart,usart_brr_t guard_time,usart_brr_t prescaler);
 
 #endif /* USART_H */
