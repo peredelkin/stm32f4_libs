@@ -74,5 +74,13 @@ extern bool usart_cr1_read_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr1_set_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr1_reset_bit(usart_t* usart,usart_cr_t cr_bit);
 extern bool usart_cr1_over8_read(usart_t* usart);
+/******************  USART_CR2 register Functions  *******************/
+extern bool usart_cr2_read_bit(usart_t* usart,usart_cr_t cr_bit);
+extern void usart_cr2_set_bit(usart_t* usart,usart_cr_t cr_bit);
+extern void usart_cr2_reset_bit(usart_t* usart,usart_cr_t cr_bit);
+/******************  USART_CR3 register Functions  *******************/
+extern bool usart_cr3_read_bit(usart_t* usart,usart_cr_t cr_bit);
+extern void usart_cr3_set_bit(usart_t* usart,usart_cr_t cr_bit);
+extern void usart_cr3_reset_bit(usart_t* usart,usart_cr_t cr_bit);
 
 #endif /* USART_H */

@@ -167,23 +167,6 @@ void usart_brr_write(usart_t* usart,usart_brr_t mantissa,usart_brr_t fraction) {
             ((uint16_t)fraction & USART_BRR_DIV_Fraction);
 }
 
-bool usart_cr1_read_bit(usart_t* usart,usart_cr_t cr_bit) {
-    if(CHECK_BIT_BY_MASK(usart->usart->CR1,cr_bit)) return 1;
-    return 0;
-}
-
-void usart_cr1_set_bit(usart_t* usart,usart_cr_t cr_bit) {
-    SET_BIT(usart->usart->CR1,cr_bit);
-}
-
-void usart_cr1_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
-    RESET_BIT(usart->usart->CR1,cr_bit);
-}
-
-bool usart_cr1_over8_read(usart_t* usart) {
-    return usart_cr1_read_bit(usart,USART_CR1_OVER8);
-}
-
 void usart_brr_set(usart_t* usart,uint32_t fpclk,uint32_t baud) {
     uint32_t over8 = (uint32_t)usart_cr1_over8_read(usart);
     uint32_t divider = (fpclk/((8*(2-over8))*baud));
@@ -194,4 +177,46 @@ void usart_brr_set(usart_t* usart,uint32_t fpclk,uint32_t baud) {
     } else {
         usart_brr_write(usart,mantissa,fraction);
     }
+}
+
+bool usart_cr1_read_bit(usart_t* usart,usart_cr_t cr_bit) {
+    if(CHECK_BIT_BY_MASK(usart->usart->CR1,cr_bit)) return 1;
+    return 0;
+}
+void usart_cr1_set_bit(usart_t* usart,usart_cr_t cr_bit) {
+    SET_BIT(usart->usart->CR1,cr_bit);
+}
+void usart_cr1_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
+    RESET_BIT(usart->usart->CR1,cr_bit);
+}
+bool usart_cr1_over8_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_OVER8);
+}
+
+bool usart_cr2_read_bit(usart_t* usart,usart_cr_t cr_bit) {
+    if(CHECK_BIT_BY_MASK(usart->usart->CR2,cr_bit)) return 1;
+    return 0;
+}
+void usart_cr2_set_bit(usart_t* usart,usart_cr_t cr_bit) {
+    SET_BIT(usart->usart->CR2,cr_bit);
+}
+void usart_cr2_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
+    RESET_BIT(usart->usart->CR2,cr_bit);
+}
+
+bool usart_cr3_read_bit(usart_t* usart,usart_cr_t cr_bit) {
+    if(CHECK_BIT_BY_MASK(usart->usart->CR3,cr_bit)) return 1;
+    return 0;
+}
+void usart_cr3_set_bit(usart_t* usart,usart_cr_t cr_bit) {
+    SET_BIT(usart->usart->CR3,cr_bit);
+}
+void usart_cr3_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
+    RESET_BIT(usart->usart->CR3,cr_bit);
+}
+
+void usart_standard_init(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_UE); //USART Enable
+    usart_cr1_set_bit(usart,USART_CR1_TE); //TX Enable
+    usart_cr1_set_bit(usart,USART_CR1_RE); //RX Enable
 }
