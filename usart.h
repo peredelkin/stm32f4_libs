@@ -20,6 +20,7 @@
 
 typedef uint16_t usart_sr_t;
 typedef uint16_t usart_dr_t;
+typedef uint16_t usart_brr_t;
 
 typedef struct {
     void* data;
@@ -64,5 +65,8 @@ extern void usart_sr_cts_reset(usart_t* usart);
 /*******************  USART_DR register Functions  *******************/
 extern void usart_dr_write(usart_t* usart,void* data,usart_dr_t index);
 extern void usart_dr_read(usart_t* usart,void* data,usart_dr_t index);
+/******************  USART_BRR register Functions  *******************/
+void usart_brr_write(usart_t* usart,usart_brr_t mantissa,usart_brr_t fraction);
+/******************  USART_CR1 register Functions  *******************/
 
 #endif /* USART_H */

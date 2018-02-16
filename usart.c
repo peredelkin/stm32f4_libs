@@ -156,3 +156,13 @@ void usart_dr_write(usart_t* usart,void* data,usart_dr_t index) {
 void usart_dr_read(usart_t* usart,void* data,usart_dr_t index) {
     ((uint8_t*)data)[index] = (uint8_t)(usart->usart->DR & USART_DR_DR);
 }
+/**
+ * Write "mantissa" and "fraction" to  Baud rate register
+ * @param usart: USART
+ * @param mantissa
+ * @param fraction
+ */
+void usart_brr_write(usart_t* usart,usart_brr_t mantissa,usart_brr_t fraction) {
+    usart->usart->BRR = ((uint16_t)(mantissa << 4) & USART_BRR_DIV_Mantissa) |
+            ((uint16_t)fraction & USART_BRR_DIV_Fraction);
+}
