@@ -68,6 +68,7 @@ extern void usart_dr_write(usart_t* usart,void* data,usart_dr_t index);
 extern void usart_dr_read(usart_t* usart,void* data,usart_dr_t index);
 /******************  USART_BRR register Functions  *******************/
 extern void usart_brr_write(usart_t* usart,usart_brr_t mantissa,usart_brr_t fraction);
+extern void usart_brr_set(usart_t* usart,uint32_t fpclk,uint32_t baud);
 /******************  USART_CR1 register Functions  *******************/
 extern bool usart_cr1_read_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr1_set_bit(usart_t* usart,usart_cr_t cr_bit);
