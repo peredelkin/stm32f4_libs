@@ -18,7 +18,7 @@
  * @param sr_bit: Status Bit
  * @return: Value Of Status Bit 
  */
-bool usart_sr_read(usart_t* usart,usart_sr_t sr_bit) {
+bool usart_sr_read_bit(usart_t* usart,usart_sr_t sr_bit) {
     if(CHECK_BIT_BY_MASK(usart->usart->SR,sr_bit)) return 1;
     return 0;
 }
@@ -27,7 +27,7 @@ bool usart_sr_read(usart_t* usart,usart_sr_t sr_bit) {
  * @param usart: USART
  * @param sr_bit: Status Bit
  */
-void usart_sr_reset(usart_t* usart,usart_sr_t sr_bit) {
+void usart_sr_reset_bit(usart_t* usart,usart_sr_t sr_bit) {
     RESET_BIT(usart->usart->SR,sr_bit);
 }
 /**
@@ -36,7 +36,7 @@ void usart_sr_reset(usart_t* usart,usart_sr_t sr_bit) {
  * @return: Parity Error
  */
 bool usart_sr_pe_read(usart_t* usart) {
-    return usart_sr_read(usart,USART_SR_PE);
+    return usart_sr_read_bit(usart,USART_SR_PE);
 }
 /**
  * Read Framing Error Flag
@@ -44,7 +44,7 @@ bool usart_sr_pe_read(usart_t* usart) {
  * @return: Framing Error
  */
 bool usart_sr_fe_read(usart_t* usart) {
-    return usart_sr_read(usart,USART_SR_FE);
+    return usart_sr_read_bit(usart,USART_SR_FE);
 }
 /**
  * Read Noise Error Flag
@@ -52,7 +52,7 @@ bool usart_sr_fe_read(usart_t* usart) {
  * @return: Noise Error Flag
  */
 bool usart_sr_ne_read(usart_t* usart) {
-    return usart_sr_read(usart,USART_SR_NE);
+    return usart_sr_read_bit(usart,USART_SR_NE);
 }
 /**
  * Read OverRun Error Flag
@@ -60,7 +60,7 @@ bool usart_sr_ne_read(usart_t* usart) {
  * @return: OverRun Error 
  */
 bool usart_sr_ore_read(usart_t* usart) {
-    return usart_sr_read(usart,USART_SR_ORE);
+    return usart_sr_read_bit(usart,USART_SR_ORE);
 }
 /**
  * Read IDLE line detected
@@ -68,7 +68,7 @@ bool usart_sr_ore_read(usart_t* usart) {
  * @return: IDLE line detected
  */
 bool usart_sr_idle_read(usart_t* usart) {
-    return usart_sr_read(usart,USART_SR_IDLE);
+    return usart_sr_read_bit(usart,USART_SR_IDLE);
 }
 /**
  * Read Data Register Not Empty
@@ -76,14 +76,14 @@ bool usart_sr_idle_read(usart_t* usart) {
  * @return: Read Data Register Not Empty 
  */
 bool usart_sr_rxne_read(usart_t* usart) {
-    return usart_sr_read(usart,USART_SR_RXNE);
+    return usart_sr_read_bit(usart,USART_SR_RXNE);
 }
 /**
  * Reset Data Register Not Empty
  * @param usart: USART
  */
 void usart_sr_rxne_reset(usart_t* usart) {
-    usart_sr_reset(usart,USART_SR_RXNE);
+    usart_sr_reset_bit(usart,USART_SR_RXNE);
 }
 /**
  * Read Transmission Complete
@@ -91,14 +91,14 @@ void usart_sr_rxne_reset(usart_t* usart) {
  * @return: Transmission Complete 
  */
 bool usart_sr_tc_read(usart_t* usart) {
-    return usart_sr_read(usart,USART_SR_TC);
+    return usart_sr_read_bit(usart,USART_SR_TC);
 }
 /**
  * Reset Transmission Complete
  * @param usart: USART
  */
 void usart_sr_tc_reset(usart_t* usart) {
-    return usart_sr_reset(usart,USART_SR_TC);
+    return usart_sr_reset_bit(usart,USART_SR_TC);
 }
 /**
  * Read Transmit Data Register Empty
@@ -106,7 +106,7 @@ void usart_sr_tc_reset(usart_t* usart) {
  * @return: Transmit Data Register Empty 
  */
 bool usart_sr_txe_read(usart_t* usart) {
-    return usart_sr_read(usart,USART_SR_TXE);
+    return usart_sr_read_bit(usart,USART_SR_TXE);
 }
 /**
  * Read LIN Break Detection Flag
@@ -114,14 +114,14 @@ bool usart_sr_txe_read(usart_t* usart) {
  * @return: LIN Break Detection Flag
  */
 bool usart_sr_lbd_read(usart_t* usart) {
-    return usart_sr_read(usart,USART_SR_LBD);
+    return usart_sr_read_bit(usart,USART_SR_LBD);
 }
 /**
  * Reset LIN Break Detection Flag
  * @param usart: USART
  */
 void usart_sr_lbd_reset(usart_t* usart) {
-    usart_sr_reset(usart,USART_SR_LBD);
+    usart_sr_reset_bit(usart,USART_SR_LBD);
 }
 /**
  * Read CTS Flag
@@ -129,14 +129,14 @@ void usart_sr_lbd_reset(usart_t* usart) {
  * @return: CTS Flag
  */
 bool usart_sr_cts_read(usart_t* usart) {
-    return usart_sr_read(usart,USART_SR_CTS);
+    return usart_sr_read_bit(usart,USART_SR_CTS);
 }
 /**
  * Reset CTS Flag
  * @param usart: USART
  */
 void usart_sr_cts_reset(usart_t* usart) {
-    usart_sr_reset(usart,USART_SR_CTS);
+    usart_sr_reset_bit(usart,USART_SR_CTS);
 }
 /**
  * Wrtite "data" by "index" into USART Data Register
@@ -165,4 +165,33 @@ void usart_dr_read(usart_t* usart,void* data,usart_dr_t index) {
 void usart_brr_write(usart_t* usart,usart_brr_t mantissa,usart_brr_t fraction) {
     usart->usart->BRR = ((uint16_t)(mantissa << 4) & USART_BRR_DIV_Mantissa) |
             ((uint16_t)fraction & USART_BRR_DIV_Fraction);
+}
+
+bool usart_cr1_read_bit(usart_t* usart,usart_cr_t cr_bit) {
+    if(CHECK_BIT_BY_MASK(usart->usart->CR1,cr_bit)) return 1;
+    return 0;
+}
+
+void usart_cr1_set_bit(usart_t* usart,usart_cr_t cr_bit) {
+    SET_BIT(usart->usart->CR1,cr_bit);
+}
+
+void usart_cr1_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
+    RESET_BIT(usart->usart->CR1,cr_bit);
+}
+
+bool usart_cr1_over8_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_OVER8);
+}
+
+void usart_brr_set(usart_t* usart,uint32_t fpclk,uint32_t baud) {
+    uint32_t over8 = (uint32_t)usart_cr1_over8_read(usart);
+    uint32_t divider = (fpclk/((8*(2-over8))*baud));
+    uint16_t mantissa = (uint16_t)(divider >> 4);
+    uint16_t fraction = (uint16_t)(divider - (uint16_t)(mantissa << 4));
+    if(over8) {
+        usart_brr_write(usart,mantissa,(fraction & (uint16_t)0x07));
+    } else {
+        usart_brr_write(usart,mantissa,fraction);
+    }
 }

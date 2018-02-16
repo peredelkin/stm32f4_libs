@@ -21,6 +21,7 @@
 typedef uint16_t usart_sr_t;
 typedef uint16_t usart_dr_t;
 typedef uint16_t usart_brr_t;
+typedef uint16_t usart_cr_t;
 
 typedef struct {
     void* data;
@@ -36,8 +37,8 @@ typedef struct {
 } usart_t;
 
 /******************* USART_SR register Functions *******************/
-extern bool usart_sr_read(usart_t* usart,usart_sr_t sr_bit);
-extern void usart_sr_reset(usart_t* usart,usart_sr_t sr_bit);
+extern bool usart_sr_read_bit(usart_t* usart,usart_sr_t sr_bit);
+extern void usart_sr_reset_bit(usart_t* usart,usart_sr_t sr_bit);
 
 extern bool usart_sr_pe_read(usart_t* usart);
 
@@ -66,7 +67,11 @@ extern void usart_sr_cts_reset(usart_t* usart);
 extern void usart_dr_write(usart_t* usart,void* data,usart_dr_t index);
 extern void usart_dr_read(usart_t* usart,void* data,usart_dr_t index);
 /******************  USART_BRR register Functions  *******************/
-void usart_brr_write(usart_t* usart,usart_brr_t mantissa,usart_brr_t fraction);
+extern void usart_brr_write(usart_t* usart,usart_brr_t mantissa,usart_brr_t fraction);
 /******************  USART_CR1 register Functions  *******************/
+extern bool usart_cr1_read_bit(usart_t* usart,usart_cr_t cr_bit);
+extern void usart_cr1_set_bit(usart_t* usart,usart_cr_t cr_bit);
+extern void usart_cr1_reset_bit(usart_t* usart,usart_cr_t cr_bit);
+extern bool usart_cr1_over8_read(usart_t* usart);
 
 #endif /* USART_H */
