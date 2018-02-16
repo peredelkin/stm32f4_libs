@@ -22,36 +22,47 @@ typedef uint16_t usart_sr_t;
 typedef uint16_t usart_dr_t;
 
 typedef struct {
+    void* data;
+    usart_dr_t data_index;
+    usart_dr_t data_size;
+    usart_dr_t data_max;
+} usart_trx_t;
+
+typedef struct {
+    usart_trx_t receive;
+    usart_trx_t transmit;
     USART_TypeDef* usart;
 } usart_t;
 
 /******************* USART_SR register Functions *******************/
-bool usart_sr_read(usart_t* usart,usart_sr_t sr_bit);
-void usart_sr_reset(usart_t* usart,usart_sr_t sr_bit);
+extern bool usart_sr_read(usart_t* usart,usart_sr_t sr_bit);
+extern void usart_sr_reset(usart_t* usart,usart_sr_t sr_bit);
 
-bool usart_sr_pe_read(usart_t* usart);
+extern bool usart_sr_pe_read(usart_t* usart);
 
-bool usart_sr_fe_read(usart_t* usart);
+extern bool usart_sr_fe_read(usart_t* usart);
 
-bool usart_sr_ne_read(usart_t* usart);
+extern bool usart_sr_ne_read(usart_t* usart);
 
-bool usart_sr_ore_read(usart_t* usart);
+extern bool usart_sr_ore_read(usart_t* usart);
 
-bool usart_sr_idle_read(usart_t* usart);
+extern bool usart_sr_idle_read(usart_t* usart);
 
-bool usart_sr_rxne_read(usart_t* usart);
-void usart_sr_rxne_reset(usart_t* usart);
+extern bool usart_sr_rxne_read(usart_t* usart);
+extern void usart_sr_rxne_reset(usart_t* usart);
 
-bool usart_sr_tc_read(usart_t* usart);
-void usart_sr_tc_reset(usart_t* usart);
+extern bool usart_sr_tc_read(usart_t* usart);
+extern void usart_sr_tc_reset(usart_t* usart);
 
-bool usart_sr_txe_read(usart_t* usart);
+extern bool usart_sr_txe_read(usart_t* usart);
 
-bool usart_sr_lbd_read(usart_t* usart);
-void usart_sr_lbd_reset(usart_t* usart);
+extern bool usart_sr_lbd_read(usart_t* usart);
+extern void usart_sr_lbd_reset(usart_t* usart);
 
-bool usart_sr_cts_read(usart_t* usart);
-void usart_sr_cts_reset(usart_t* usart);
+extern bool usart_sr_cts_read(usart_t* usart);
+extern void usart_sr_cts_reset(usart_t* usart);
 /*******************  USART_DR register Functions  *******************/
+extern void usart_dr_write(usart_t* usart,void* data,usart_dr_t index);
+extern void usart_dr_read(usart_t* usart,void* data,usart_dr_t index);
 
 #endif /* USART_H */
