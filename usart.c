@@ -169,8 +169,8 @@ void usart_brr_write(usart_t* usart,usart_brr_t mantissa,usart_brr_t fraction) {
 
 void usart_brr_set(usart_t* usart,uint32_t fpclk,uint32_t baud) {
     uint32_t over8 = (uint32_t)usart_cr1_over8_read(usart);
-    uint32_t divider = (fpclk/((8*(2-over8))*baud));
-    uint16_t mantissa = (uint16_t)(divider >> 4);
+    uint32_t mantissa = (fpclk/((8*(2-over8))*baud));
+    uint16_t divider = (uint16_t)(fpclk/baud);
     uint16_t fraction = (uint16_t)(divider - (uint16_t)(mantissa << 4));
     if(over8) {
         usart_brr_write(usart,mantissa,(fraction & (uint16_t)0x07));
@@ -221,7 +221,8 @@ void usart_gtpr_write(usart_t* usart,usart_brr_t guard_time,usart_brr_t prescale
 }
 
 void usart_standard_init(usart_t* usart) {
-    usart_cr1_set_bit(usart,USART_CR1_UE); //USART Enable
+    usart_brr_write(usart,182,4);
     usart_cr1_set_bit(usart,USART_CR1_TE); //TX Enable
     usart_cr1_set_bit(usart,USART_CR1_RE); //RX Enable
+    usart_cr1_set_bit(usart,USART_CR1_UE); //USART Enable
 }
