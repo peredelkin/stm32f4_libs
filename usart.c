@@ -141,7 +141,7 @@ void usart_sr_cts_reset(usart_t* usart) {
 /**
  * Wrtite "data" by "index" into USART Data Register
  * @param usart: USART
- * @param data: Data
+ * @param data: Data to write
  * @param index: Data Index
  */
 void usart_dr_write(usart_t* usart,void* data,usart_dr_t index) {
@@ -150,7 +150,7 @@ void usart_dr_write(usart_t* usart,void* data,usart_dr_t index) {
 /**
  * Read from USART Data Register into "data" by "index"
  * @param usart: USART
- * @param data: Data
+ * @param data: Data to read
  * @param index: Data index
  */
 void usart_dr_read(usart_t* usart,void* data,usart_dr_t index) {
@@ -166,7 +166,12 @@ void usart_brr_write(usart_t* usart,usart_brr_t mantissa,usart_brr_t fraction) {
     usart->usart->BRR = ((uint16_t)(mantissa << 4) & USART_BRR_DIV_Mantissa) |
             ((uint16_t)fraction & USART_BRR_DIV_Fraction);
 }
-
+/**
+ * Configures BaudRateRegister by Bus Freq and baudrate
+ * @param usart: USART
+ * @param fpclk: Bus Freq in Hz
+ * @param baud: BaudRate in Bps
+ */
 void usart_brr_set(usart_t* usart,uint32_t fpclk,uint32_t baud) {
     uint32_t over8 = (uint32_t)usart_cr1_over8_read(usart);
     uint32_t mantissa = (fpclk/((8*(2-over8))*baud));
@@ -178,17 +183,37 @@ void usart_brr_set(usart_t* usart,uint32_t fpclk,uint32_t baud) {
         usart_brr_write(usart,mantissa,fraction);
     }
 }
-
+/**
+ * Read bit of ControlRegister1
+ * @param usart: USART
+ * @param cr_bit: CR1 bit mask
+ * @return: State of rc_bit
+ */
 bool usart_cr1_read_bit(usart_t* usart,usart_cr_t cr_bit) {
     if(CHECK_BIT_BY_MASK(usart->usart->CR1,cr_bit)) return 1;
     return 0;
 }
+/**
+ * Set bit of ControlRegister1
+ * @param usart: USART
+ * @param cr_bit: CR1 bit mask
+ */
 void usart_cr1_set_bit(usart_t* usart,usart_cr_t cr_bit) {
     SET_BIT(usart->usart->CR1,cr_bit);
 }
+/**
+ * Reset bit of ControlRegister1
+ * @param usart: USART
+ * @param cr_bit: CR1 bit mask
+ */
 void usart_cr1_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
     RESET_BIT(usart->usart->CR1,cr_bit);
 }
+/**
+ * Read state "oversampling by 8"
+ * @param usart: USART
+ * @return: 1 if "oversampling by 8" ,else return 0 - "oversampling by 16" 
+ */
 bool usart_cr1_over8_read(usart_t* usart) {
     return usart_cr1_read_bit(usart,USART_CR1_OVER8);
 }
@@ -214,19 +239,30 @@ void usart_cr3_set_bit(usart_t* usart,usart_cr_t cr_bit) {
 void usart_cr3_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
     RESET_BIT(usart->usart->CR3,cr_bit);
 }
-
+/**
+ * Write Guard time and prescaler register
+ * @param usart
+ * @param guard_time
+ * @param prescaler
+ */
 void usart_gtpr_write(usart_t* usart,usart_brr_t guard_time,usart_brr_t prescaler) {
     usart->usart->BRR = ((uint16_t)guard_time & USART_GTPR_GT) |
             ((uint16_t)prescaler & USART_GTPR_PSC);
 }
-
-void usart_standard_init(usart_t* usart) {
+/**
+ * Initial BaudRate 9600,Enable TX,RX and USART
+ * @param usart: USART
+ */
+void usart_std_init(usart_t* usart) {
     usart_brr_set(usart,SystemCoreClock/2,9600);
     usart_cr1_set_bit(usart,USART_CR1_TE); //TX Enable
     usart_cr1_set_bit(usart,USART_CR1_RE); //RX Enable
     usart_cr1_set_bit(usart,USART_CR1_UE); //USART Enable
 }
-
+/**
+ * Software send usart.transmit.data by usart.transmit.data_index
+ * @param usart
+ */
 void usart_send_poll(usart_t* usart) {
     usart->transmit.data_index = 0;
     usart->transmit.data_size = (uint16_t)strnlen((const char*)usart->transmit.data,usart->transmit.index_max);

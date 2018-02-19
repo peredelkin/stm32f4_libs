@@ -87,5 +87,5 @@ extern void usart_cr3_reset_bit(usart_t* usart,usart_cr_t cr_bit);
 /******************  USART_GTPR register Functions ******************/
 extern void usart_gtpr_write(usart_t* usart,usart_brr_t guard_time,usart_brr_t prescaler);
 /******************  USART_STD_INIT ******************/
-extern void usart_standard_init(usart_t* usart);
+extern void usart_std_init(usart_t* usart);
 #endif /* USART_H */
