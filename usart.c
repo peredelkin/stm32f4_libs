@@ -226,3 +226,13 @@ void usart_standard_init(usart_t* usart) {
     usart_cr1_set_bit(usart,USART_CR1_RE); //RX Enable
     usart_cr1_set_bit(usart,USART_CR1_UE); //USART Enable
 }
+
+void usart_send_poll(usart_t* usart) {
+    usart->transmit.data_index = 0;
+    usart->transmit.data_size = (uint16_t)strnlen((const char*)usart->transmit.data,usart->transmit.index_max);
+    while(usart->transmit.data_index!=usart->transmit.data_size) {
+        while(!usart_sr_txe_read(usart));
+        usart_dr_write(usart,usart->transmit.data,usart->transmit.data_index);
+        usart->transmit.data_index++;
+    }
+}

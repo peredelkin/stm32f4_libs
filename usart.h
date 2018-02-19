@@ -16,6 +16,7 @@
 
 #include <stm32f4xx.h>
 #include <stdbool.h>
+#include <string.h>
 #include "macroses.h"
 
 typedef uint16_t usart_sr_t;
@@ -27,7 +28,7 @@ typedef struct {
     void* data;
     usart_dr_t data_index;
     usart_dr_t data_size;
-    usart_dr_t data_max;
+    usart_dr_t index_max;
 } usart_trx_t;
 
 typedef struct {
@@ -65,6 +66,7 @@ extern bool usart_sr_cts_read(usart_t* usart);
 extern void usart_sr_cts_reset(usart_t* usart);
 /*******************  USART_DR register Functions  *******************/
 extern void usart_dr_write(usart_t* usart,void* data,usart_dr_t index);
+extern void usart_send_poll(usart_t* usart);
 extern void usart_dr_read(usart_t* usart,void* data,usart_dr_t index);
 /******************  USART_BRR register Functions  *******************/
 extern void usart_brr_write(usart_t* usart,usart_brr_t mantissa,usart_brr_t fraction);
