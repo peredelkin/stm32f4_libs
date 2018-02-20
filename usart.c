@@ -224,7 +224,55 @@ void usart_over8_reset(usart_t* usart) {
     usart_cr1_reset_bit(usart,USART_CR1_OVER8);
 }
 
+bool usart_ue_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_UE);
+}
+void usart_ue_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_UE);
+}
+void usart_ue_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_UE);
+}
 
+bool usart_m_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_M);
+}
+void usart_m_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_M);
+}
+void usart_m_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_M);
+}
+
+bool usart_wake_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_WAKE);
+}
+void usart_wake_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_WAKE);
+}
+void usart_wake_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_WAKE);
+}
+
+bool usart_pce_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_PCE);
+}
+void usart_pce_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_PCE);
+}
+void usart_pce_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_PCE);
+}
+
+bool usart_ps_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_PS);
+}
+void usart_ps_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_PS);
+}
+void usart_ps_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_PS);
+}
 
 bool usart_peie_read(usart_t* usart) {
     return usart_cr1_read_bit(usart,USART_CR1_PEIE);
