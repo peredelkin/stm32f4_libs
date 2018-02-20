@@ -75,7 +75,66 @@ extern void usart_baud_rate_set(usart_t* usart,uint32_t fpclk,uint32_t baud);
 extern bool usart_cr1_read_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr1_set_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr1_reset_bit(usart_t* usart,usart_cr_t cr_bit);
+
 extern bool usart_over8_read(usart_t* usart);
+extern void usart_over8_set(usart_t* usart);
+extern void usart_over8_reset(usart_t* usart);
+
+extern bool usart_ue_read(usart_t* usart);
+extern void usart_ue_set(usart_t* usart);
+extern void usart_ue_reset(usart_t* usart);
+
+extern bool usart_m_read(usart_t* usart);
+extern void usart_m_set(usart_t* usart);
+extern void usart_m_reset(usart_t* usart);
+
+extern bool usart_wake_read(usart_t* usart);
+extern void usart_wake_set(usart_t* usart);
+extern void usart_wake_reset(usart_t* usart);
+
+extern bool usart_pce_read(usart_t* usart);
+extern void usart_pce_set(usart_t* usart);
+extern void usart_pce_reset(usart_t* usart);
+
+extern bool usart_ps_read(usart_t* usart);
+extern void usart_ps_set(usart_t* usart);
+extern void usart_ps_reset(usart_t* usart);
+
+extern bool usart_peie_read(usart_t* usart);
+extern void usart_peie_set(usart_t* usart);
+extern void usart_peie_reset(usart_t* usart);
+
+extern bool usart_txeie_read(usart_t* usart);
+extern void usart_txeie_set(usart_t* usart);
+extern void usart_txeie_reset(usart_t* usart);
+
+extern bool usart_tcie_read(usart_t* usart);
+extern void usart_tcie_set(usart_t* usart);
+extern void usart_tcie_reset(usart_t* usart);
+
+extern bool usart_rxneie_read(usart_t* usart);
+extern void usart_rxneie_set(usart_t* usart);
+extern void usart_rxneie_reset(usart_t* usart);
+
+extern bool usart_idleie_read(usart_t* usart);
+extern void usart_idleid_set(usart_t* usart);
+extern void usart_idleie_reset(usart_t* usart);
+
+extern bool usart_te_read(usart_t* usart);
+extern void usart_te_set(usart_t* usart);
+extern void usart_te_reset(usart_t* usart);
+
+extern bool usart_re_read(usart_t* usart);
+extern void usart_re_set(usart_t* usart);
+extern void usart_re_reset(usart_t* usart);
+
+extern bool usart_rwu_read(usart_t* usart);
+extern void usart_rwu_set(usart_t* usart);
+extern void usart_rwu_reset(usart_t* usart);
+
+extern bool usart_sbk_read(usart_t* usart);
+extern void usart_sbk_set(usart_t* usart);
+extern void usart_skb_reset(usart_t* usart);
 /******************  USART_CR2 register Functions  *******************/
 extern bool usart_cr2_read_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr2_set_bit(usart_t* usart,usart_cr_t cr_bit);
