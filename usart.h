@@ -41,41 +41,41 @@ typedef struct {
 extern bool usart_sr_read_bit(usart_t* usart,usart_sr_t sr_bit);
 extern void usart_sr_reset_bit(usart_t* usart,usart_sr_t sr_bit);
 
-extern bool usart_sr_pe_read(usart_t* usart);
+extern bool usart_pe_stat_read(usart_t* usart);
 
-extern bool usart_sr_fe_read(usart_t* usart);
+extern bool usart_fe_stat_read(usart_t* usart);
 
-extern bool usart_sr_ne_read(usart_t* usart);
+extern bool usart_ne_stat_read(usart_t* usart);
 
-extern bool usart_sr_ore_read(usart_t* usart);
+extern bool usart_ore_stat_read(usart_t* usart);
 
-extern bool usart_sr_idle_read(usart_t* usart);
+extern bool usart_idle_stat_read(usart_t* usart);
 
-extern bool usart_sr_rxne_read(usart_t* usart);
-extern void usart_sr_rxne_reset(usart_t* usart);
+extern bool usart_rxne_stat_read(usart_t* usart);
+extern void usart_rxne_stat_reset(usart_t* usart);
 
-extern bool usart_sr_tc_read(usart_t* usart);
-extern void usart_sr_tc_reset(usart_t* usart);
+extern bool usart_tc_stat_read(usart_t* usart);
+extern void usart_tc_stat_reset(usart_t* usart);
 
-extern bool usart_sr_txe_read(usart_t* usart);
+extern bool usart_txe_stat_read(usart_t* usart);
 
-extern bool usart_sr_lbd_read(usart_t* usart);
-extern void usart_sr_lbd_reset(usart_t* usart);
+extern bool usart_lbd_stat_read(usart_t* usart);
+extern void usart_lbd_stat_reset(usart_t* usart);
 
-extern bool usart_sr_cts_read(usart_t* usart);
-extern void usart_sr_cts_reset(usart_t* usart);
+extern bool usart_cts_stat_read(usart_t* usart);
+extern void usart_cts_stat_reset(usart_t* usart);
 /*******************  USART_DR register Functions  *******************/
-extern void usart_dr_write(usart_t* usart,void* data,usart_dr_t index);
+extern void usart_data_write(usart_t* usart,void* data,usart_dr_t index);
 extern void usart_send_poll(usart_t* usart);
-extern void usart_dr_read(usart_t* usart,void* data,usart_dr_t index);
+extern void usart_data_read(usart_t* usart,void* data,usart_dr_t index);
 /******************  USART_BRR register Functions  *******************/
 extern void usart_brr_write(usart_t* usart,usart_brr_t mantissa,usart_brr_t fraction);
-extern void usart_brr_set(usart_t* usart,uint32_t fpclk,uint32_t baud);
+extern void usart_baud_rate_set(usart_t* usart,uint32_t fpclk,uint32_t baud);
 /******************  USART_CR1 register Functions  *******************/
 extern bool usart_cr1_read_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr1_set_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr1_reset_bit(usart_t* usart,usart_cr_t cr_bit);
-extern bool usart_cr1_over8_read(usart_t* usart);
+extern bool usart_over8_read(usart_t* usart);
 /******************  USART_CR2 register Functions  *******************/
 extern bool usart_cr2_read_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr2_set_bit(usart_t* usart,usart_cr_t cr_bit);
