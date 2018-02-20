@@ -224,6 +224,78 @@ void usart_over8_reset(usart_t* usart) {
     usart_cr1_reset_bit(usart,USART_CR1_OVER8);
 }
 
+
+
+bool usart_peie_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_PEIE);
+}
+void usart_peie_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_PEIE);
+}
+void usart_peie_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_PEIE);
+}
+
+bool usart_txeie_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_TXEIE);
+}
+void usart_txeie_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_TXEIE);
+}
+void usart_txeie_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_TXEIE);
+}
+
+bool usart_tcie_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_TCIE);
+}
+void usart_tcie_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_TCIE);
+}
+void usart_tcie_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_TCIE);
+}
+
+bool usart_rxneie_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_RXNEIE);
+}
+void usart_rxneie_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_RXNEIE);
+}
+void usart_rxneie_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_RXNEIE);
+}
+
+bool usart_idleie_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_IDLEIE);
+}
+void usart_idleid_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_IDLEIE);
+}
+void usart_idleie_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_IDLEIE);
+}
+
+bool usart_te_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_TE);
+}
+void usart_te_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_TE);
+}
+void usart_te_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_TE);
+}
+
+bool usart_re_read(usart_t* usart) {
+    return usart_cr1_read_bit(usart,USART_CR1_RE);
+}
+void usart_re_set(usart_t* usart) {
+    usart_cr1_set_bit(usart,USART_CR1_RE);
+}
+void usart_re_reset(usart_t* usart) {
+    usart_cr1_reset_bit(usart,USART_CR1_RE);
+}
+
 bool usart_rwu_read(usart_t* usart) {
     return usart_cr1_read_bit(usart,USART_CR1_RWU);
 }
