@@ -44,7 +44,7 @@ bool usart_status_error_framing_stat(usart_t* usart) {
 /**
  * Read Noise Error Flag
  * @param: usart
- * @return: Noise Error Flag
+ * @return: Noise Error
  */
 bool usart_status_noise_error_stat(usart_t* usart) {
     return usart_status_register_read_bit(usart,USART_SR_NE);
@@ -60,15 +60,15 @@ bool usart_status_overrun_error_stat(usart_t* usart) {
 /**
  * Read IDLE line detected
  * @param usart: USART
- * @return: IDLE line detected
+ * @return: IDLE line
  */
 bool usart_status_idle_line_stat(usart_t* usart) {
     return usart_status_register_read_bit(usart,USART_SR_IDLE);
 }
 /**
- * Read Data Register Not Empty
+ * Read Receive Data Register Not Empty
  * @param usart: USART
- * @return: Read Data Register Not Empty 
+ * @return: Receive Data Register Not Empty 
  */
 bool usart_status_rx_not_empty_stat(usart_t* usart) {
     return usart_status_register_read_bit(usart,USART_SR_RXNE);
@@ -98,7 +98,7 @@ bool usart_status_tx_empty_stat(usart_t* usart) {
 /**
  * Read LIN Break Detection Flag
  * @param usart: USART
- * @return: LIN Break Detection Flag
+ * @return: LIN Break Detected
  */
 bool usart_status_lin_break_stat(usart_t* usart) {
     return usart_status_register_read_bit(usart,USART_SR_LBD);
@@ -181,9 +181,9 @@ bool usart_cr3_read_bit(usart_t* usart,usart_cr_t cr_bit) {
     return 0;
 }
 /**
- * Set bit of ControlRegister1
+ * Set bit of Control Register 1
  * @param usart: USART
- * @param cr_bit: CR1 bit mask
+ * @param cr_bit: Control Register 1 bit mask
  */
 void usart_control_register_1_set_bit(usart_t* usart,usart_cr_t cr_bit) {
     SET_BIT(usart->usart->CR1,cr_bit);
@@ -195,9 +195,9 @@ void usart_cr3_set_bit(usart_t* usart,usart_cr_t cr_bit) {
     SET_BIT(usart->usart->CR3,cr_bit);
 }
 /**
- * Reset bit of ControlRegister1
+ * Reset bit of Control Register 1
  * @param usart: USART
- * @param cr_bit: CR1 bit mask
+ * @param cr_bit: Control Register 1 bit mask
  */
 void usart_control_register_1_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
     RESET_BIT(usart->usart->CR1,cr_bit);
@@ -209,21 +209,24 @@ void usart_cr3_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
     RESET_BIT(usart->usart->CR3,cr_bit);
 }
 /**
- * Read state "oversampling by 8"
+ * Read  Oversampling mode
  * @param usart: USART
- * @return: 1 if "oversampling by 8" ,else return 0 - "oversampling by 16" 
+ * @return: Oversampling by 8 
  */
 bool usart_ctrl_oversamp8_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_OVER8);
 }
-/*************NEW**************/
 void usart_ctrl_oversamp8_ena(usart_t* usart) {
     usart_control_register_1_set_bit(usart,USART_CR1_OVER8);
 }
 void usart_ctrl_oversamp8_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_OVER8);
 }
-
+/**
+ * Read Usart status
+ * @param usart: USaRT
+ * @return: Usarte Enable 
+ */
 bool usart_ctrl_usart_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_UE);
 }
@@ -233,7 +236,11 @@ void usart_ctrl_usart_ena(usart_t* usart) {
 void usart_ctrl_usart_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_UE);
 }
-
+/**
+ * Read Word length
+ * @param usart: Usart
+ * @return: 9bit Word length (return 0 if 8bit)
+ */
 bool usart_ctrl_9bit_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_M);
 }
@@ -243,7 +250,11 @@ void usart_ctrl_9bit_ena(usart_t* usart) {
 void usart_ctrl_9bit_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_M);
 }
-
+/**
+ * Read Wakeup method
+ * @param usart: USART
+ * @return: Address Mark Wakeup method
+ */
 bool usart_ctrl_wake_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_WAKE);
 }
@@ -253,7 +264,11 @@ void usart_ctrl_wake_ena(usart_t* usart) {
 void usart_wake_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_WAKE);
 }
-
+/**
+ * Read Parity control
+ * @param usart: USART
+ * @return: Parity control enabled
+ */
 bool usart_ctrl_parity_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_PCE);
 }
@@ -263,7 +278,11 @@ void usart_ctrl_parity_ena(usart_t* usart) {
 void usart_ctrl_parity_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_PCE);
 }
-
+/**
+ * Read Parity selection
+ * @param usart: USART
+ * @return: Odd parity (return 0 if Even parity)
+ */
 bool usart_ctrl_odd_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_PS);
 }
@@ -273,7 +292,11 @@ void usart_ctrl_odd_ena(usart_t* usart) {
 void usart_ctrl_odd_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_PS);
 }
-
+/**
+ * Read Parity Error interrupt
+ * @param usart: USART
+ * @return: Parity Error interrupt enabled
+ */
 bool usart_ctrl_interrupt_parity_error_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_PEIE);
 }
@@ -283,7 +306,11 @@ void usart_ctrl_interrupt_parity_error_ena(usart_t* usart) {
 void usart_ctrl_interrupt_parity_error_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_PEIE);
 }
-
+/**
+ * Read Transmit Data Register Empty interrupt
+ * @param usart: USART
+ * @return: Transmit Data Register Empty interrupt enabled
+ */
 bool usart_ctrl_interrupt_tx_empty_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_TXEIE);
 }
@@ -293,7 +320,11 @@ void usart_ctrl_interrupt_tx_empty_ena(usart_t* usart) {
 void usart_ctrl_interrupt_tx_empty_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_TXEIE);
 }
-
+/**
+ * Read Transmission complete interrupt
+ * @param usart: USART
+ * @return: Transmission complete interrupt enabled
+ */
 bool usart_ctrl_interrupt_tx_complete_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_TCIE);
 }
@@ -303,7 +334,11 @@ void usart_ctrl_interrupt_tx_complete_ena(usart_t* usart) {
 void usart_ctrl_interrupt_tx_complete_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_TCIE);
 }
-
+/**
+ * Receive Data Register Not Empty interrupt
+ * @param usart: USART
+ * @return: Receive Data Register Not Empty interrupt enabled 
+ */
 bool usart_ctrl_interrupt_rx_not_empty_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_RXNEIE);
 }
@@ -313,7 +348,11 @@ void usart_ctrl_interrupt_rx_not_empty_ena(usart_t* usart) {
 void usart_ctrl_interrupt_rx_not_empty_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_RXNEIE);
 }
-
+/**
+ * Read IDLE Line interrupt
+ * @param usart: USART
+ * @return: IDLE interrupt enabled  
+ */
 bool usart_ctrl_interrupt_idle_line_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_IDLEIE);
 }
@@ -323,7 +362,11 @@ void usart_ctrl_interrupt_idle_line_ena(usart_t* usart) {
 void usart_ctrl_interrupt_idle_line_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_IDLEIE);
 }
-
+/**
+ * Read Transmitter status
+ * @param usart: USART
+ * @return: Transmitter enabled 
+ */
 bool usart_ctrl_tx_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_TE);
 }
@@ -333,7 +376,11 @@ void usart_ctrl_tx_ena(usart_t* usart) {
 void usart_ctrl_tx_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_TE);
 }
-
+/**
+ * Read Receiver status
+ * @param usart: USART
+ * @return: Receiver enabled 
+ */
 bool usart_ctrl_rx_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_RE);
 }
@@ -343,7 +390,11 @@ void usart_ctrl_rx_ena(usart_t* usart) {
 void usart_ctrl_rx_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_RE);
 }
-
+/**
+ * Read Receiver wakeup
+ * @param usart: USART
+ * @return: Receiver in mute mode (return 0 if Receiver in active mode)
+ */
 bool usart_ctrl_rx_wakeup_mute_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_RWU);
 }
@@ -353,7 +404,11 @@ void usart_ctrl_rx_wakeup_mute_ena(usart_t* usart) {
 void usart_ctrl_rx_wakeup_mute_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_RWU);
 }
-
+/**
+ * Read Send Break
+ * @param usart: USART
+ * @return: Break character will be transmitted
+ */
 bool usart_ctrl_send_break_stat(usart_t* usart) {
     return usart_control_register_1_read_bit(usart,USART_CR1_SBK);
 }
