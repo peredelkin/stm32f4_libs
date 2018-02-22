@@ -136,9 +136,9 @@ extern bool usart_ctrl_send_break_stat(usart_t* usart);
 extern void usart_ctrl_send_break_ena(usart_t* usart);
 extern void usart_ctrl_send_break_dis(usart_t* usart);
 /******************  USART_CR2 register Functions  *******************/
-extern bool usart_cr2_read_bit(usart_t* usart,usart_cr_t cr_bit);
-extern void usart_cr2_set_bit(usart_t* usart,usart_cr_t cr_bit);
-extern void usart_cr2_reset_bit(usart_t* usart,usart_cr_t cr_bit);
+extern bool usart_control_register_2_read_bit(usart_t* usart,usart_cr_t cr_bit);
+extern void usart_control_register_2_set_bit(usart_t* usart,usart_cr_t cr_bit);
+extern void usart_control_register_2_reset_bit(usart_t* usart,usart_cr_t cr_bit);
 /******************  USART_CR3 register Functions  *******************/
 extern bool usart_cr3_read_bit(usart_t* usart,usart_cr_t cr_bit);
 extern void usart_cr3_set_bit(usart_t* usart,usart_cr_t cr_bit);

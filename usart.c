@@ -172,7 +172,7 @@ bool usart_control_register_1_read_bit(usart_t* usart,usart_cr_t cr_bit) {
     if(CHECK_BIT_BY_MASK(usart->usart->CR1,cr_bit)) return 1;
     return 0;
 }
-bool usart_cr2_read_bit(usart_t* usart,usart_cr_t cr_bit) {
+bool usart_control_register_2_read_bit(usart_t* usart,usart_cr_t cr_bit) {
     if(CHECK_BIT_BY_MASK(usart->usart->CR2,cr_bit)) return 1;
     return 0;
 }
@@ -188,7 +188,7 @@ bool usart_cr3_read_bit(usart_t* usart,usart_cr_t cr_bit) {
 void usart_control_register_1_set_bit(usart_t* usart,usart_cr_t cr_bit) {
     SET_BIT(usart->usart->CR1,cr_bit);
 }
-void usart_cr2_set_bit(usart_t* usart,usart_cr_t cr_bit) {
+void usart_control_register_2_set_bit(usart_t* usart,usart_cr_t cr_bit) {
     SET_BIT(usart->usart->CR2,cr_bit);
 }
 void usart_cr3_set_bit(usart_t* usart,usart_cr_t cr_bit) {
@@ -202,7 +202,7 @@ void usart_cr3_set_bit(usart_t* usart,usart_cr_t cr_bit) {
 void usart_control_register_1_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
     RESET_BIT(usart->usart->CR1,cr_bit);
 }
-void usart_cr2_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
+void usart_control_register_2_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
     RESET_BIT(usart->usart->CR2,cr_bit);
 }
 void usart_cr3_reset_bit(usart_t* usart,usart_cr_t cr_bit) {
@@ -418,7 +418,41 @@ void usart_ctrl_send_break_ena(usart_t* usart) {
 void usart_ctrl_send_break_dis(usart_t* usart) {
     usart_control_register_1_reset_bit(usart,USART_CR1_SBK);
 }
-/*************END NEW**********/
+
+/*****NEW******/
+bool usart_ctrl_lin_mode_stat(usart_t* usart) {
+    return usart_control_register_2_read_bit(usart,USART_CR2_LINEN);
+}
+void usart_ctrl_lin_mode_ena(usart_t* usart) {
+    usart_control_register_2_set_bit(usart,USART_CR2_LINEN);
+}
+void usart_ctrl_lin_mode_dis(usart_t* usart) {
+    usart_control_register_2_reset_bit(usart,USART_CR2_LINEN);
+}
+
+void usart_ctrl_1_stop_bit_set(usart_t* usart) {
+    usart_control_register_2_reset_bit(usart,USART_CR2_STOP); //00
+}
+void usart_ctrl_05_stop_bit_set(usart_t* usart) {
+    usart_control_register_2_set_bit(usart,USART_CR2_STOP_0); //01
+}
+void usart_ctrl_2_stop_bit_set(usart_t* usart) {
+    usart_control_register_2_set_bit(usart,USART_CR2_STOP_1); //10
+}
+void usart_ctrl_15_stop_bit_set(usart_t* usart) {
+    usart_control_register_2_set_bit(usart,USART_CR2_STOP); //11
+}
+
+bool usart_ctrl_clock_pin_stat(usart_t* usart) {
+    return usart_control_register_2_read_bit(usart,USART_CR2_CLKEN);
+}
+void usart_ctrl_clock_pin_ena(usart_t* usart) {
+    usart_control_register_2_set_bit(usart,USART_CR2_CLKEN);
+}
+void usart_ctrl_clock_pin_dis(usart_t* usart) {
+    usart_control_register_2_reset_bit(usart,USART_CR2_CLKEN);
+}
+/***END NEW****/
 
 /**
  * Write Guard time and prescaler register
