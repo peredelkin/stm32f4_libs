@@ -492,6 +492,16 @@ void usart_ctrl_interrupt_lin_break_ena(usart_t* usart) {
 void usart_ctrl_interrupt_lin_break_dis(usart_t* usart) {
     usart_control_register_2_reset_bit(usart,USART_CR2_LBDIE);
 }
+
+bool usart_ctrl_lin_break_detection_length_stat(usart_t* usart) {
+    return usart_control_register_2_read_bit(usart,USART_CR2_LBDL);
+}
+void usart_ctrl_lin_break_detection_length_11b(usart_t* usart) {
+    usart_control_register_2_set_bit(usart,USART_CR2_LBDL);
+}
+void usart_ctrl_lin_break_detection_length_10b(usart_t* usart) {
+    usart_control_register_2_reset_bit(usart,USART_CR2_LBDL);
+}
 /***END NEW****/
 
 /**
