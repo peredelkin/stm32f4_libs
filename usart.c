@@ -452,6 +452,46 @@ void usart_ctrl_clock_pin_ena(usart_t* usart) {
 void usart_ctrl_clock_pin_dis(usart_t* usart) {
     usart_control_register_2_reset_bit(usart,USART_CR2_CLKEN);
 }
+
+bool usart_ctrl_clock_polarity_stat(usart_t* usart) {
+    return usart_control_register_2_read_bit(usart,USART_CR2_CPOL);
+}
+void usart_ctrl_clock_polarity_high_set(usart_t* usart) {
+    usart_control_register_2_set_bit(usart,USART_CR2_CPOL);
+}
+void usart_ctrl_clock_polarity_low_set(usart_t* usart) {
+    usart_control_register_2_reset_bit(usart,USART_CR2_CPOL);
+}
+
+bool usart_ctrl_clock_phase_stat(usart_t* usart) {
+    return usart_control_register_2_read_bit(usart,USART_CR2_CPHA);
+}
+void usart_ctrl_clock_phase_second_set(usart_t* usart) {
+    usart_control_register_2_set_bit(usart,USART_CR2_CPHA);
+}
+void usart_ctrl_clock_phase_first_set(usart_t* usart) {
+    usart_control_register_2_reset_bit(usart,USART_CR2_CPHA);
+}
+
+bool usart_ctrl_clock_last_bit_pulse_stat(usart_t* usart) {
+    return usart_control_register_2_read_bit(usart,USART_CR2_LBCL);
+}
+void usart_ctrl_clock_last_bit_pulse_ena(usart_t* usart) {
+    usart_control_register_2_set_bit(usart,USART_CR2_LBCL);
+}
+void usart_ctrl_clock_last_bit_pulse_dis(usart_t* usart) {
+    usart_control_register_2_reset_bit(usart,USART_CR2_LBCL);
+}
+
+bool usart_ctrl_interrupt_lin_break_stat(usart_t* usart) {
+    return usart_control_register_2_read_bit(usart,USART_CR2_LBDIE);
+}
+void usart_ctrl_interrupt_lin_break_ena(usart_t* usart) {
+    usart_control_register_2_set_bit(usart,USART_CR2_LBDIE);
+}
+void usart_ctrl_interrupt_lin_break_dis(usart_t* usart) {
+    usart_control_register_2_reset_bit(usart,USART_CR2_LBDIE);
+}
 /***END NEW****/
 
 /**
