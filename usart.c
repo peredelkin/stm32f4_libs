@@ -25,98 +25,59 @@ bool usart_status_register_bit_read(usart_t* usart,usart_sr_t sr_bit) {
 void usart_status_register_bit_clr(usart_t* usart,usart_sr_t sr_bit) {
     RESET_BIT(usart->usart->SR,sr_bit);
 }
-/**
- * Read Parity Error Flag
- * @param usart: USART
- * @return: Parity Error
- */
-bool usart_stat_error_parity_read(usart_t* usart) {
-    return usart_status_register_bit_read(usart,USART_SR_PE);
-}
-/**
- * Read Framing Error Flag
- * @param: usart
- * @return: Framing Error
- */
-bool usart_stat_error_framing_read(usart_t* usart) {
-    return usart_status_register_bit_read(usart,USART_SR_FE);
-}
-/**
- * Read Noise Error Flag
- * @param: usart
- * @return: Noise Error
- */
-bool usart_stat_noise_error_read(usart_t* usart) {
-    return usart_status_register_bit_read(usart,USART_SR_NE);
-}
-/**
- * Read OverRun Error Flag
- * @param usart: USART
- * @return: OverRun Error 
- */
-bool usart_stat_overrun_error_read(usart_t* usart) {
-    return usart_status_register_bit_read(usart,USART_SR_ORE);
-}
-/**
- * Read IDLE line detected
- * @param usart: USART
- * @return: IDLE line
- */
-bool usart_stat_idle_line_read(usart_t* usart) {
-    return usart_status_register_bit_read(usart,USART_SR_IDLE);
-}
-/**
- * Read Receive Data Register Not Empty
- * @param usart: USART
- * @return: Receive Data Register Not Empty 
- */
-bool usart_stat_receive_data_register_not_empty_read(usart_t* usart) {
-    return usart_status_register_bit_read(usart,USART_SR_RXNE);
-}
-void usart_stat_receive_data_register_not_empty_clr(usart_t* usart) {
-    usart_status_register_bit_clr(usart,USART_SR_RXNE);
-}
-/**
- * Read Transmission Complete
- * @param usart: USART
- * @return: Transmission Complete 
- */
-bool usart_stat_transmission_complete_read(usart_t* usart) {
-    return usart_status_register_bit_read(usart,USART_SR_TC);
-}
-void usart_stat_transmission_complete_clr(usart_t* usart) {
-    return usart_status_register_bit_clr(usart,USART_SR_TC);
-}
-/**
- * Read Transmit Data Register Empty
- * @param usart: USART
- * @return: Transmit Data Register Empty 
- */
-bool usart_stat_transmit_data_register_empty_read(usart_t* usart) {
-    return usart_status_register_bit_read(usart,USART_SR_TXE);
-}
-/**
- * Read LIN Break Detection Flag
- * @param usart: USART
- * @return: LIN Break Detected
- */
-bool usart_stat_lin_break_read(usart_t* usart) {
-    return usart_status_register_bit_read(usart,USART_SR_LBD);
-}
-void usart_stat_lin_break_clr(usart_t* usart) {
-    usart_status_register_bit_clr(usart,USART_SR_LBD);
-}
-/**
- * Read CTS Flag
- * @param usart: USART
- * @return: CTS Flag
- */
-bool usart_stat_clear_to_send_read(usart_t* usart) {
-    return usart_status_register_bit_read(usart,USART_SR_CTS);
-}
+/*******************STATUS REGISTER*************************/
 void usart_stat_clear_to_send_clr(usart_t* usart) {
     usart_status_register_bit_clr(usart,USART_SR_CTS);
 }
+bool usart_stat_clear_to_send_read(usart_t* usart) {
+    return usart_status_register_bit_read(usart,USART_SR_CTS);
+}
+
+void usart_stat_lin_break_clr(usart_t* usart) {
+    usart_status_register_bit_clr(usart,USART_SR_LBD);
+}
+bool usart_stat_lin_break_read(usart_t* usart) {
+    return usart_status_register_bit_read(usart,USART_SR_LBD);
+}
+
+bool usart_stat_transmit_data_register_empty_read(usart_t* usart) {
+    return usart_status_register_bit_read(usart,USART_SR_TXE);
+}
+
+void usart_stat_transmission_complete_clr(usart_t* usart) {
+    return usart_status_register_bit_clr(usart,USART_SR_TC);
+}
+bool usart_stat_transmission_complete_read(usart_t* usart) {
+    return usart_status_register_bit_read(usart,USART_SR_TC);
+}
+
+void usart_stat_receive_data_register_not_empty_clr(usart_t* usart) {
+    usart_status_register_bit_clr(usart,USART_SR_RXNE);
+}
+bool usart_stat_receive_data_register_not_empty_read(usart_t* usart) {
+    return usart_status_register_bit_read(usart,USART_SR_RXNE);
+}
+
+bool usart_stat_idle_line_read(usart_t* usart) {
+    return usart_status_register_bit_read(usart,USART_SR_IDLE);
+}
+
+bool usart_stat_overrun_error_read(usart_t* usart) {
+    return usart_status_register_bit_read(usart,USART_SR_ORE);
+}
+
+bool usart_stat_noise_error_read(usart_t* usart) {
+    return usart_status_register_bit_read(usart,USART_SR_NE);
+}
+
+bool usart_stat_error_framing_read(usart_t* usart) {
+    return usart_status_register_bit_read(usart,USART_SR_FE);
+}
+
+bool usart_stat_error_parity_read(usart_t* usart) {
+    return usart_status_register_bit_read(usart,USART_SR_PE);
+}
+/***************END STATUS REGISTER*************************/
 /**
  * Wrtite "data" by "index" into USART Data Register
  * @param usart: USART
@@ -195,6 +156,7 @@ void usart_control_register_2_bit_clr(usart_t* usart,usart_cr_t cr_mask) {
 void usart_control_register_3_bit_clr(usart_t* usart,usart_cr_t cr_mask) {
     RESET_BIT(usart->usart->CR3,cr_mask);
 }
+/******************CONTROL REGISTER 1***********************/
 /**
  * Read  Oversampling mode
  * @param usart: USART
@@ -405,7 +367,8 @@ void usart_ctrl_send_break_ena(usart_t* usart) {
 void usart_ctrl_send_break_dis(usart_t* usart) {
     usart_control_register_1_bit_clr(usart,USART_CR1_SBK);
 }
-
+/**************END CONTROL REGISTER 1***********************/
+/******************CONTROL REGISTER 2***********************/
 bool usart_ctrl_lin_mode_read(usart_t* usart) {
     return usart_control_register_2_bit_read(usart,USART_CR2_LINEN);
 }
@@ -498,7 +461,28 @@ void usart_ctrl_address_of_node_set(usart_t* usart,usart_cr_t address) {
 void usart_ctrl_address_of_node_clr(usart_t* usart) {
     usart_control_register_2_bit_clr(usart,USART_CR2_ADD);
 }
+/**************END CONTROL REGISTER 2***********************/
+/******************CONTROL REGISTER 3***********************/
+bool usart_ctrl_sample_bit_method_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_ONEBIT);
+}
+void usart_ctrl_sample_bit_method_1b(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_ONEBIT);
+}
+void usart_ctrl_sample_bit_method_3b(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_ONEBIT);
+}
 
+bool usart_ctrl_interrupt_clear_to_send_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_CTSIE);
+}
+void usart_ctrl_interrupt_clear_to_send_ena(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_CTSIE);
+}
+void usart_ctrl_interrupt_clear_to_send_dis(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_CTSIE);
+}
+/**************END CONTROL REGISTER 3***********************/
 /**
  * Write Guard time and prescaler register
  * @param usart
