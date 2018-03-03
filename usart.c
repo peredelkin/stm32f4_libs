@@ -395,6 +395,106 @@ void usart_ctrl_interrupt_clear_to_send_ena(usart_t* usart) {
 bool usart_ctrl_interrupt_clear_to_send_read(usart_t* usart) {
     return usart_control_register_2_bit_read(usart,USART_CR3_CTSIE);
 }
+
+void usart_ctrl_clear_to_send_dis(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_CTSE);
+}
+void usart_ctrl_clear_to_send_ena(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_CTSE);
+}
+bool usart_ctrl_clear_to_send_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_CTSE);
+}
+
+void usart_ctrl_request_to_send_dis(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_RTSE);
+}
+void usart_ctrl_request_to_send_ena(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_RTSE);
+}
+bool usart_ctrl_request_to_send_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_RTSE);
+}
+
+void usart_ctrl_dma_transmitter_dis(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_DMAT);
+}
+void usart_ctrl_dma_transmitter_ena(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_DMAT);
+}
+bool usart_ctrl_dma_transmitter_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_DMAT);
+}
+
+void usart_ctrl_dma_receiver_dis(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_DMAR);
+}
+void usart_ctrl_dma_receiver_ena(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_DMAR);
+}
+bool usart_ctrl_dma_receiver_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_DMAR);
+}
+
+void usart_ctrl_smartcard_mode_dis(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_SCEN);
+}
+void usart_ctrl_smartcard_mode_ena(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_SCEN);
+}
+bool usart_ctrl_smartcard_mode_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_SCEN);
+}
+
+void usart_ctrl_smartcard_nack_dis(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_NACK);
+}
+void usart_ctrl_smartcard_nack_ena(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_NACK);
+}
+bool usart_ctrl_smartcard_nack_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_NACK);
+}
+
+void usart_ctrl_half_duplex_selection_dis(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_HDSEL);
+}
+void usart_ctrl_half_duplex_selection_ena(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_HDSEL);
+}
+bool usart_ctrl_half_duplex_selection_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_HDSEL);
+}
+
+void usart_ctrl_irda_power_mode_normal(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_IRLP);
+}
+void usart_ctrl_idra_power_mode_low(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_IRLP);
+}
+bool usart_ctrl_idra_power_mode_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_IRLP);
+}
+
+void usart_ctrl_irda_mode_dis(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_IREN);
+}
+void usart_ctrl_idra_mode_ena(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_IREN);
+}
+bool usart_ctrl_idra_mode_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_IREN);
+}
+
+void usart_ctrl_interrupt_error_dis(usart_t* usart) {
+    usart_control_register_2_bit_clr(usart,USART_CR3_EIE);
+}
+void usart_ctrl_interrupt_error_ena(usart_t* usart) {
+    usart_control_register_2_bit_set(usart,USART_CR3_EIE);
+}
+bool usart_ctrl_interrupt_error_read(usart_t* usart) {
+    return usart_control_register_2_bit_read(usart,USART_CR3_EIE);
+}
 /**************END CONTROL REGISTER 3***********************/
 /**
  * Write Guard time and prescaler register
