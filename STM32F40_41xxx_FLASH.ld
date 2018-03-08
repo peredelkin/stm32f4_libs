@@ -24,6 +24,7 @@ SECTIONS
 		*(.v4_bx)
         *(.gcc_except_table)
         *(.rodata .rodata.*)        /* read-only data (constants) */
+        *(vtable) /* С++ virtual functions */
 		KEEP(*(.ioview .ioview.*))	/* I/O View */
         *(.gnu.linkonce.r.*)
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
