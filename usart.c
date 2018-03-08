@@ -12,55 +12,50 @@
  */
 /****************Attention! Not completely verified*****************/
 #include "usart.h"
-/**
- * Read USART Status Register
- * @param usart: USART
- * @param sr_bit: Status Bit
- * @return: Value Of Status Bit 
- */
-bool usart_status_register_bit_read(usart_t* usart,usart_sr_t sr_bit) {
+
+inline bool usart_status_register_bit_read(usart_t* usart,usart_sr_t sr_bit) {
     if(CHECK_BIT_BY_MASK(usart->usart->SR,sr_bit)) return 1;
     return 0;
 }
-void usart_status_register_bit_clr(usart_t* usart,usart_sr_t sr_bit) {
+inline void usart_status_register_bit_clr(usart_t* usart,usart_sr_t sr_bit) {
     RESET_BIT(usart->usart->SR,sr_bit);
 }
 
-bool usart_control_register_1_bit_read(usart_t* usart,usart_cr_t cr_mask) {
+inline bool usart_control_register_1_bit_read(usart_t* usart,usart_cr_t cr_mask) {
     if(CHECK_BIT_BY_MASK(usart->usart->CR1,cr_mask)) return 1;
     return 0;
 }
-bool usart_control_register_2_bit_read(usart_t* usart,usart_cr_t cr_mask) {
+inline bool usart_control_register_2_bit_read(usart_t* usart,usart_cr_t cr_mask) {
     if(CHECK_BIT_BY_MASK(usart->usart->CR2,cr_mask)) return 1;
     return 0;
 }
-bool usart_control_register_3_bit_read(usart_t* usart,usart_cr_t cr_mask) {
+inline bool usart_control_register_3_bit_read(usart_t* usart,usart_cr_t cr_mask) {
     if(CHECK_BIT_BY_MASK(usart->usart->CR3,cr_mask)) return 1;
     return 0;
 }
 
-usart_cr_t usart_control_register_2_read(usart_t* usart,usart_cr_t cr_mask) {
+inline usart_cr_t usart_control_register_2_read(usart_t* usart,usart_cr_t cr_mask) {
     usart_cr_t control_register = (usart->usart->CR2 & cr_mask);
     return control_register;
 }
 
-void usart_control_register_1_bit_set(usart_t* usart,usart_cr_t cr_mask) {
+inline void usart_control_register_1_bit_set(usart_t* usart,usart_cr_t cr_mask) {
     SET_BIT(usart->usart->CR1,cr_mask);
 }
-void usart_control_register_2_bit_set(usart_t* usart,usart_cr_t cr_mask) {
+inline void usart_control_register_2_bit_set(usart_t* usart,usart_cr_t cr_mask) {
     SET_BIT(usart->usart->CR2,cr_mask);
 }
-void usart_control_register_3_bit_set(usart_t* usart,usart_cr_t cr_mask) {
+inline void usart_control_register_3_bit_set(usart_t* usart,usart_cr_t cr_mask) {
     SET_BIT(usart->usart->CR3,cr_mask);
 }
 
-void usart_control_register_1_bit_clr(usart_t* usart,usart_cr_t cr_mask) {
+inline void usart_control_register_1_bit_clr(usart_t* usart,usart_cr_t cr_mask) {
     RESET_BIT(usart->usart->CR1,cr_mask);
 }
-void usart_control_register_2_bit_clr(usart_t* usart,usart_cr_t cr_mask) {
+inline void usart_control_register_2_bit_clr(usart_t* usart,usart_cr_t cr_mask) {
     RESET_BIT(usart->usart->CR2,cr_mask);
 }
-void usart_control_register_3_bit_clr(usart_t* usart,usart_cr_t cr_mask) {
+inline void usart_control_register_3_bit_clr(usart_t* usart,usart_cr_t cr_mask) {
     RESET_BIT(usart->usart->CR3,cr_mask);
 }
 /*******************STATUS REGISTER*************************/
