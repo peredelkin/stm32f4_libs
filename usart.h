@@ -120,12 +120,12 @@ namespace usart {
 
     class bus {
     private:
+        bool tx_busy;
 
         typedef struct {
             void* data;
             uint16_t data_index;
             uint16_t data_size;
-            uint16_t index_max;
         } usart_trx_t;
 
         USART_TypeDef* usart_bus_port;
@@ -221,14 +221,37 @@ namespace usart {
             }
         }
 
-        void send_poll() {
+        void send_poll(void* data, uint16_t size) {
+            transmit.data = data;
             transmit.data_index = 0;
-            /* transmit.data_size = (uint16_t) strnlen((const char*) transmit.data,transmit.index_max); */
-            transmit.data_size = (uint16_t) strlen((const char*) transmit.data);
+            transmit.data_size = size;
             while (transmit.data_index != transmit.data_size) {
                 while (!status_register_read(TXE));
                 data_write(transmit.data, transmit.data_index);
                 transmit.data_index++;
+            }
+        }
+
+        bool write(void* data, uint16_t size) {
+            if (tx_busy) {
+                return tx_busy;
+            } else {
+                tx_busy = 1;
+                transmit.data = data;
+                transmit.data_index = 0;
+                transmit.data_size = size;
+                control_register_set(TXEIE);
+            }
+        }
+
+        void txe_handler() {
+            if (status_register_read(TXE)) {
+                data_write(transmit.data, transmit.data_index);
+                transmit.data_index++;
+                if (transmit.data_index >= transmit.data_size) {
+                    tx_busy = 0;
+                    control_register_reset(TXEIE);
+                }
             }
         }
 
@@ -237,7 +260,8 @@ namespace usart {
             control_register_set(TE); //TX Enable
             //control_register_set(RE); //RX Enable
             control_register_set(UE); //USART Enable
-            transmit.data = (void*)"STM32F407VGT6\r\n";
+            const char* std_msg = "USART inited\r\n";
+            send_poll((void*) std_msg, strlen((const char*) std_msg));
         }
 
         bus(USART_TypeDef* port) {
