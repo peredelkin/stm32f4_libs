@@ -197,8 +197,48 @@ namespace usart {
         usart_trx_t receive;
         usart_trx_t transmit;
 
+        void flag_tc_reset() {
+            status_register_reset(TC);
+        }
+
+        bool flag_tc_read() {
+            return status_register_read(TC);
+        }
+        
+        bool flag_txe_read() {
+            return status_register_read(TXE);
+        }
+
         bool oversampling_mode_read() {
             return control_register_read(OVER_8);
+        }
+        
+        void interrupt_txe_enable() {
+            control_register_set(TXEIE);
+        }
+        
+        void interrupt_txe_disable() {
+            control_register_reset(TXEIE);
+        }
+
+        uint32_t data_register_addr() {
+            return (uint32_t)&(usart_bus_port->DR);
+        }
+
+        void dma_tx_enable() {
+            control_register_set(DMAT);
+        }
+
+        void dma_tx_disable() {
+            control_register_reset(DMAT);
+        }
+
+        void dma_rx_enable() {
+            control_register_set(DMAR);
+        }
+
+        void dma_rx_diwable() {
+            control_register_reset(DMAR);
         }
 
         void data_read(void* data, uint16_t index) {
@@ -221,18 +261,18 @@ namespace usart {
             }
         }
 
-        void send_poll(void* data, uint16_t size) {
+        void write_poll(void* data, uint16_t size) {
             transmit.data = data;
             transmit.data_index = 0;
             transmit.data_size = size;
             while (transmit.data_index != transmit.data_size) {
-                while (!status_register_read(TXE));
+                while (!flag_txe_read());
                 data_write(transmit.data, transmit.data_index);
                 transmit.data_index++;
             }
         }
 
-        bool write(void* data, uint16_t size) {
+        bool write_int(void* data, uint16_t size) {
             if (tx_busy) {
                 return tx_busy;
             } else {
@@ -240,28 +280,40 @@ namespace usart {
                 transmit.data = data;
                 transmit.data_index = 0;
                 transmit.data_size = size;
-                control_register_set(TXEIE);
+                interrupt_txe_enable();
             }
         }
 
-        void txe_handler() {
-            if (status_register_read(TXE)) {
+        void interrupt_txe_handler() {
+            if (flag_txe_read()) {
                 data_write(transmit.data, transmit.data_index);
                 transmit.data_index++;
                 if (transmit.data_index >= transmit.data_size) {
                     tx_busy = 0;
-                    control_register_reset(TXEIE);
+                    interrupt_txe_disable();
                 }
             }
         }
 
-        void std_init() {
-            baud_rate_set(SystemCoreClock / 4, 9600);
-            control_register_set(TE); //TX Enable
-            //control_register_set(RE); //RX Enable
-            control_register_set(UE); //USART Enable
-            const char* std_msg = "USART inited\r\n";
-            send_poll((void*) std_msg, strlen((const char*) std_msg));
+        void init(uint32_t fpclk, uint32_t baud, bool te, bool re) {
+            baud_rate_set(fpclk, baud);
+            if (te) {
+                control_register_set(TE); //TX Enable
+            } else {
+                control_register_reset(TE); //TX Disable
+            }
+
+            if (re) {
+                control_register_set(RE); //RX Enable
+            } else {
+                control_register_reset(RE); //RX Disable
+            }
+
+            if (te || re) {
+                control_register_set(UE); //USART Enable
+            } else {
+                control_register_reset(UE); //USART Disable
+            }
         }
 
         bus(USART_TypeDef* port) {
