@@ -56,24 +56,25 @@ namespace usart {
         TE = USART_CR1_TE,
         RE = USART_CR1_RE,
         RWU = USART_CR1_RWU,
-        SBK = USART_CR1_SBK
+        SBK = USART_CR1_SBK,
+
+        OVER_16 = 0,
+
+        USART_ENABLE = UE,
+        USART_DISABLE = 0,
+
+        LENGTH_8 = 0,
+        LENGTH_9 = M,
+
+        IDLE_LINE = 0,
+        ADDR_MARK = WAKE,
+
+        PARITY_ENABLE = PCE,
+        PARITY_DISABLE = 0,
+
+        EVEN_PAR = 0,
+        ODD_PAR = PS,
     };
-    ctrl_1_t OVER_16 = (ctrl_1_t) 0;
-
-    ctrl_1_t USART_ENABLE = UE;
-    ctrl_1_t USART_DISABLE = (ctrl_1_t) 0;
-
-    ctrl_1_t LENGTH_8 = (ctrl_1_t) 0;
-    ctrl_1_t LENGTH_9 = M;
-
-    ctrl_1_t IDLE_LINE = (ctrl_1_t) 0;
-    ctrl_1_t ADDR_MARK = WAKE;
-
-    ctrl_1_t PARITY_ENABLE = PCE;
-    ctrl_1_t PARITY_DISABLE = (ctrl_1_t) 0;
-
-    ctrl_1_t EVEN_PAR = (ctrl_1_t) 0;
-    ctrl_1_t ODD_PAR = PS;
 
     enum ctrl_2_t {
         LINEN = USART_CR2_LINEN,
@@ -86,16 +87,19 @@ namespace usart {
         LBCL = USART_CR2_LBCL,
         LBDIE = USART_CR2_LBDIE,
         LBDL = USART_CR2_LBDL,
-        ADD = USART_CR2_ADD
+        ADD = USART_CR2_ADD,
+
+        STOP_10 = 0,
+        STOP_05 = STOP01,
+        STOP_20 = STOP10,
+        STOP_15 = STOP11,
+        
+        LOW = 0,
+        HIGH = CPOL,
+        
+        FIRST = 0,
+        SECOND = 0,
     };
-    ctrl_2_t STOP_10 = (ctrl_2_t) 0;
-    ctrl_2_t STOP_05 = STOP01;
-    ctrl_2_t STOP_20 = STOP10;
-    ctrl_2_t STOP_15 = STOP11;
-    ctrl_2_t LOW = (ctrl_2_t) 0;
-    ctrl_2_t HIGH = CPOL;
-    ctrl_2_t FIRST = (ctrl_2_t) 0;
-    ctrl_2_t SECOND = (ctrl_2_t) 0;
 
     enum ctrl_3_t {
         ONE_BIT = USART_CR3_ONEBIT,
@@ -109,9 +113,10 @@ namespace usart {
         HDSEL = USART_CR3_HDSEL,
         IRLP = USART_CR3_IRLP,
         IREN = USART_CR3_IREN,
-        EIE = USART_CR3_EIE
+        EIE = USART_CR3_EIE,
+
+        THREE_BIT = 0,
     };
-    ctrl_3_t THREE_BIT = (ctrl_3_t) 0;
 
     enum gptmask_t {
         GT = USART_GTPR_GT,
@@ -128,197 +133,77 @@ namespace usart {
             uint16_t data_size;
         } usart_trx_t;
 
-        USART_TypeDef* usart_bus_port;
-
-        bool status_register_read(stat_t status) {
-            if ((usart_bus_port->SR & (uint16_t) status) == (uint16_t) status) return 1;
-            else return 0;
-        }
-
-        void status_register_reset(stat_t status) {
-            usart_bus_port->SR &= ~((uint16_t) status);
-        }
-
-        void baud_rate_register_set(uint16_t mantissa, uint16_t fraction) {
-            usart_bus_port->BRR = ((uint16_t) (mantissa << 4) & (uint16_t) DIV_Mantissa) |
-                    ((uint16_t) fraction & (uint16_t) DIV_Fraction);
-        }
-
-        void control_register_set(ctrl_1_t ctrl) {
-            usart_bus_port->CR1 |= (uint16_t) ctrl;
-        }
-
-        void control_register_set(ctrl_2_t ctrl) {
-            usart_bus_port->CR2 |= (uint16_t) ctrl;
-        }
-
-        void control_register_set(ctrl_3_t ctrl) {
-            usart_bus_port->CR3 |= (uint16_t) ctrl;
-        }
-
-        void control_register_reset(ctrl_1_t ctrl) {
-            usart_bus_port->CR1 &= ~((uint16_t) ctrl);
-        }
-
-        void control_register_reset(ctrl_2_t ctrl) {
-            usart_bus_port->CR2 &= ~((uint16_t) ctrl);
-        }
-
-        void control_register_reset(ctrl_3_t ctrl) {
-            usart_bus_port->CR3 &= ~((uint16_t) ctrl);
-        }
-
-        bool control_register_read(ctrl_1_t ctrl) {
-            if ((usart_bus_port->CR1 & (uint16_t) ctrl) == (uint16_t) ctrl) return 1;
-            else return 0;
-        }
-
-        bool control_register_read(ctrl_2_t ctrl) {
-            if ((usart_bus_port->CR2 & (uint16_t) ctrl) == (uint16_t) ctrl) return 1;
-            else return 0;
-        }
-
-        bool control_register_read(ctrl_3_t ctrl) {
-            if ((usart_bus_port->CR3 & (uint16_t) ctrl) == (uint16_t) ctrl) return 1;
-            else return 0;
-        }
-
-        void guard_time_register_set(uint16_t guart_time) {
-            usart_bus_port->GTPR &= ~((uint16_t) GT);
-            usart_bus_port->GTPR |= (guart_time & (uint16_t) GT);
-        }
-
-        void prescaler_register_set(uint16_t prescaler) {
-            usart_bus_port->GTPR &= ~((uint16_t) PSC);
-            usart_bus_port->GTPR |= (prescaler & (uint16_t) PSC);
-        }
-    public:
-
         usart_trx_t receive;
         usart_trx_t transmit;
 
-        void flag_tc_reset() {
-            status_register_reset(TC);
-        }
+        USART_TypeDef* usart_bus_port;
 
-        bool flag_tc_read() {
-            return status_register_read(TC);
-        }
-        
-        bool flag_txe_read() {
-            return status_register_read(TXE);
-        }
+        bool status_register_read(stat_t status);
 
-        bool oversampling_mode_read() {
-            return control_register_read(OVER_8);
-        }
-        
-        void interrupt_txe_enable() {
-            control_register_set(TXEIE);
-        }
-        
-        void interrupt_txe_disable() {
-            control_register_reset(TXEIE);
-        }
+        void status_register_reset(stat_t status);
 
-        uint32_t data_register_addr() {
-            return (uint32_t)&(usart_bus_port->DR);
-        }
+        void baud_rate_register_set(uint16_t mantissa, uint16_t fraction);
 
-        void dma_tx_enable() {
-            control_register_set(DMAT);
-        }
+        void control_register_set(ctrl_1_t ctrl);
 
-        void dma_tx_disable() {
-            control_register_reset(DMAT);
-        }
+        void control_register_set(ctrl_2_t ctrl);
 
-        void dma_rx_enable() {
-            control_register_set(DMAR);
-        }
+        void control_register_set(ctrl_3_t ctrl);
 
-        void dma_rx_diwable() {
-            control_register_reset(DMAR);
-        }
+        void control_register_reset(ctrl_1_t ctrl);
 
-        void data_read(void* data, uint16_t index) {
-            ((uint8_t*) data)[index] = (uint8_t) (usart_bus_port->DR & (uint16_t) DR);
-        }
+        void control_register_reset(ctrl_2_t ctrl);
 
-        void data_write(void* data, uint16_t index) {
-            usart_bus_port->DR = ((uint16_t) ((uint8_t*) data)[index] & (uint16_t) DR);
-        }
+        void control_register_reset(ctrl_3_t ctrl);
 
-        void baud_rate_set(uint32_t fpclk, uint32_t baud) {
-            uint32_t over8 = (uint32_t) oversampling_mode_read();
-            uint32_t mantissa = (fpclk / ((8 * (2 - over8)) * baud));
-            uint16_t divider = (uint16_t) (fpclk / baud);
-            uint16_t fraction = (uint16_t) (divider - (uint16_t) (mantissa << 4));
-            if (over8) {
-                baud_rate_set(mantissa, (fraction & (uint16_t) 0x07));
-            } else {
-                baud_rate_register_set(mantissa, fraction);
-            }
-        }
+        bool control_register_read(ctrl_1_t ctrl);
 
-        void write_poll(void* data, uint16_t size) {
-            transmit.data = data;
-            transmit.data_index = 0;
-            transmit.data_size = size;
-            while (transmit.data_index != transmit.data_size) {
-                while (!flag_txe_read());
-                data_write(transmit.data, transmit.data_index);
-                transmit.data_index++;
-            }
-        }
+        bool control_register_read(ctrl_2_t ctrl);
 
-        bool write_int(void* data, uint16_t size) {
-            if (tx_busy) {
-                return tx_busy;
-            } else {
-                tx_busy = 1;
-                transmit.data = data;
-                transmit.data_index = 0;
-                transmit.data_size = size;
-                interrupt_txe_enable();
-            }
-        }
+        bool control_register_read(ctrl_3_t ctrl);
 
-        void interrupt_txe_handler() {
-            if (flag_txe_read()) {
-                data_write(transmit.data, transmit.data_index);
-                transmit.data_index++;
-                if (transmit.data_index >= transmit.data_size) {
-                    tx_busy = 0;
-                    interrupt_txe_disable();
-                }
-            }
-        }
+        void guard_time_register_set(uint16_t guart_time);
 
-        void init(uint32_t fpclk, uint32_t baud, bool te, bool re) {
-            baud_rate_set(fpclk, baud);
-            if (te) {
-                control_register_set(TE); //TX Enable
-            } else {
-                control_register_reset(TE); //TX Disable
-            }
+        void prescaler_register_set(uint16_t prescaler);
+    public:
 
-            if (re) {
-                control_register_set(RE); //RX Enable
-            } else {
-                control_register_reset(RE); //RX Disable
-            }
+        void flag_tc_reset();
 
-            if (te || re) {
-                control_register_set(UE); //USART Enable
-            } else {
-                control_register_reset(UE); //USART Disable
-            }
-        }
+        bool flag_tc_read();
 
-        bus(USART_TypeDef* port) {
-            usart_bus_port = port;
-        }
+        bool flag_txe_read();
+
+        bool oversampling_mode_read();
+
+        void interrupt_txe_enable();
+
+        void interrupt_txe_disable();
+
+        uint32_t data_register_addr();
+
+        void dma_tx_enable();
+
+        void dma_tx_disable();
+
+        void dma_rx_enable();
+
+        void dma_rx_diwable();
+
+        void data_read(void* data, uint16_t index);
+
+        void data_write(void* data, uint16_t index);
+
+        void baud_rate_set(uint32_t fpclk, uint32_t baud);
+
+        void write_poll(void* data, uint16_t size);
+
+        bool write_int(void* data, uint16_t size);
+
+        void interrupt_txe_handler();
+
+        void init(uint32_t fpclk, uint32_t baud, bool te, bool re);
+
+        bus(USART_TypeDef* port);
     };
 };
 
