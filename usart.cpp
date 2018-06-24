@@ -7,7 +7,7 @@
 #include <usart.h>
 
 bool usart::bus::status_register_read(stat_t status) {
-    if ((usart_bus_port->SR & (uint16_t) status) == (uint16_t) status) return 1;
+    if (usart_bus_port->SR & (uint16_t) status) return 1;
     else return 0;
 }
 
@@ -45,17 +45,17 @@ void usart::bus::control_register_reset(ctrl_3_t ctrl) {
 }
 
 bool usart::bus::control_register_read(ctrl_1_t ctrl) {
-    if ((usart_bus_port->CR1 & (uint16_t) ctrl) == (uint16_t) ctrl) return 1;
+    if (usart_bus_port->CR1 & (uint16_t) ctrl) return 1;
     else return 0;
 }
 
 bool usart::bus::control_register_read(ctrl_2_t ctrl) {
-    if ((usart_bus_port->CR2 & (uint16_t) ctrl) == (uint16_t) ctrl) return 1;
+    if (usart_bus_port->CR2 & (uint16_t) ctrl) return 1;
     else return 0;
 }
 
 bool usart::bus::control_register_read(ctrl_3_t ctrl) {
-    if ((usart_bus_port->CR3 & (uint16_t) ctrl) == (uint16_t) ctrl) return 1;
+    if (usart_bus_port->CR3 & (uint16_t) ctrl) return 1;
     else return 0;
 }
 
