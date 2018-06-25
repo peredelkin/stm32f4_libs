@@ -30,11 +30,11 @@ void gpio::ospeed_reset(uint32_t ospeed) {
     gpio_port->OSPEEDR &= ~ospeed;
 }
 
-void gpio::opupd_set(uint32_t pupd) {
+void gpio::pupd_set(uint32_t pupd) {
     gpio_port->PUPDR |= pupd;
 }
 
-void gpio::opupd_reset(uint32_t pupd) {
+void gpio::pupd_reset(uint32_t pupd) {
     gpio_port->PUPDR &= ~pupd;
 }
 

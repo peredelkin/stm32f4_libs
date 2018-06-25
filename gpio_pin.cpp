@@ -39,15 +39,15 @@ void pin::ospeed() {
     ospeed_reset(ospeed_mask);
 }
 
-void pin::opupd(uint32_t opupd) {
-    uint32_t opupd_mask = (0b11 << (pin_number * 2));
-    opupd_reset(opupd_mask);
-    opupd_set(opupd & opupd_mask);
+void pin::pupd(uint32_t pupd) {
+    uint32_t pupd_mask = (0b11 << (pin_number * 2));
+    pupd_reset(pupd_mask);
+    pupd_set(pupd & pupd_mask);
 }
 
-void pin::opupd() {
-    uint32_t opupd_mask = (0b11 << (pin_number * 2));
-    opupd_reset(opupd_mask);
+void pin::pupd() {
+    uint32_t pupd_mask = (0b11 << (pin_number * 2));
+    pupd_reset(pupd_mask);
 }
 
 bool pin::read_in() {
@@ -96,6 +96,6 @@ pin::pin(GPIO_TypeDef* port, uint8_t pin_n) : gpio(port) {
     base_mask = (1 << pin_number);
     mode();
     ospeed();
-    opupd();
+    pupd();
     alternate();
 }

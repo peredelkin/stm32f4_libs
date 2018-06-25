@@ -27,8 +27,8 @@ public:
     void otype();
     void ospeed(uint32_t ospeed);
     void ospeed();
-    void opupd(uint32_t opupd);
-    void opupd();
+    void pupd(uint32_t opupd);
+    void pupd();
     bool read_in();
     void write_out(bool state);
     bool read_out();

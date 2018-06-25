@@ -26,8 +26,8 @@ public:
     void otype_reset(uint32_t otype);
     void ospeed_set(uint32_t ospeed);
     void ospeed_reset(uint32_t ospeed);
-    void opupd_set(uint32_t pupd);
-    void opupd_reset(uint32_t pupd);
+    void pupd_set(uint32_t pupd);
+    void pupd_reset(uint32_t pupd);
     uint32_t idata_read();
     void odata_write(uint32_t odata);
     void odata_set(uint32_t odata);

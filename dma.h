@@ -91,6 +91,14 @@ namespace dma {
             configuration_register_reset(MINC);
         }
         
+        void tcie_enable() {
+            configuration_register_set(TCIE);
+        }
+        
+        void tcie_disable() {
+            configuration_register_reset(TCIE);
+        }
+        
         void enable() {
             configuration_register_set(EN);
         }
