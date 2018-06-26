@@ -166,7 +166,7 @@ void init_tmr() {
 
     TIM8->CCER |= TIM_CCER_CC1E; //Capture Enable
 
-    TIM8->CCER |= TIM_CCER_CC2E; //Compare Enable
+    //TIM8->CCER |= TIM_CCER_CC2E; //Compare Enable
 
     TIM8->CCR2 = (uint16_t) 0xFFFF; //Preset compare
 
