@@ -122,24 +122,28 @@ bool start = false;
 extern "C" void TIM8_CC_IRQHandler(void) {
     if ((TIM8->SR & TIM_SR_CC1IF) && (TIM8->DIER & TIM_DIER_CC1IE)) { //Check capture flag
         TIM8->SR &= ~TIM_SR_CC1IF; // Clear capture flag
-
-        TIM8->CNT = (uint16_t) 0; //Reset timer
-        tim8_cap1 = (uint16_t) TIM8->CCR1; //Buffering
-        if (mark) {
-            mark = false;
-            red_led.reset();
-            TIM8->CCR2 = (uint16_t) 0xFFFF; //After Mark
+        if (!(TIM8->CR1 & TIM_CR1_CEN)) {
+            TIM8->CR1 |= TIM_CR1_CEN; //Counter Enable
         } else {
-            tim8_ch2 = (uint32_t) ((tim8_cap1 * 2)+(tim8_cap1 / 2)); //Calc 2.5T
-            if (tim8_ch2 > ((uint32_t) 0xFFFF)) { //Check ovf for CH2
-                if(TIM8->DIER & TIM_DIER_CC2IE) {
-                    TIM8->DIER &= ~TIM_DIER_CC2IE; //Compare Interrupt Disable
-                    start = false; // Stop
-                }
+            TIM8->CNT = (uint16_t) 0; //Reset timer
+            tim8_cap1 = (uint16_t) TIM8->CCR1; //Buffering
+
+            if (mark) {
+                mark = false;
+                red_led.reset();
+                TIM8->CCR2 = (uint16_t) 0xFFFF; //After Mark
             } else {
-                TIM8->CCR2 = (uint16_t) tim8_ch2; //Set 2.5T
-                if (!(TIM8->DIER & TIM_DIER_CC2IE)) {
-                    TIM8->DIER |= TIM_DIER_CC2IE; //Compare Interrupt Enable
+                tim8_ch2 = (uint32_t) ((tim8_cap1 * 2)+(tim8_cap1 / 2)); //Calc 2.5T
+                if (tim8_ch2 > ((uint32_t) 0xFFFF)) { //Check ovf for CH2
+                    if (TIM8->DIER & TIM_DIER_CC2IE) {
+                        TIM8->DIER &= ~TIM_DIER_CC2IE; //Compare Interrupt Disable
+                        start = false; // Stop
+                    }
+                } else {
+                    TIM8->CCR2 = (uint16_t) tim8_ch2; //Set 2.5T
+                    if (!(TIM8->DIER & TIM_DIER_CC2IE)) {
+                        TIM8->DIER |= TIM_DIER_CC2IE; //Compare Interrupt Enable
+                    }
                 }
             }
         }
@@ -173,8 +177,6 @@ void init_tmr() {
     TIM8->PSC = (uint16_t) 83; // Prescaler
 
     TIM8->EGR |= TIM_EGR_UG; // Re-initialize 
-
-    TIM8->CR1 |= TIM_CR1_CEN; //Counter Enable
 }
 
 /*
