@@ -125,25 +125,25 @@ void tim8_capture_handler(void) {
 
         TIM8->DIER |= TIM_DIER_UIE;                                             // Enable Update Interrupt
 
-        red_led.reset();
+        red_led.set();
     } else {
-        TIM8->CNT = (uint16_t) 0;                                               //Reset timer
-        tim8_cap1 = (uint16_t) TIM8->CCR1;                                      //Read Capture
+        TIM8->CNT = (uint16_t) 0;                                               // Reset timer
+        tim8_cap1 = (uint16_t) TIM8->CCR1;                                      // Read Capture
         if (mark) {
             mark = false;                                                       // For internal needs
-            blue_led.reset();                                                   //visualization
-            TIM8->CCR2 = (uint16_t) 0xFFFF;                                     //After Mark
+            blue_led.reset();                                                   // Visualization
+            TIM8->CCR2 = (uint16_t) 0xFFFF;                                     // Preset CH2
         } else {
-            tim8_ch2 = (uint32_t) ((tim8_cap1 * 2)+(tim8_cap1 / 2));            //Calc 2.5T
-            if (tim8_ch2 > ((uint32_t) 0xFFFF)) {                               //Check ovf for CH2
+            tim8_ch2 = (uint32_t) ((tim8_cap1 * 2)+(tim8_cap1 / 2));            // Calc 2.5T
+            if (tim8_ch2 > ((uint32_t) 0xFFFF)) {                               // Check ovf for CH2
                 if (TIM8->DIER & TIM_DIER_CC2IE) {
-                    TIM8->DIER &= ~TIM_DIER_CC2IE;                              //CH2 Compare Interrupt Disable
+                    TIM8->DIER &= ~TIM_DIER_CC2IE;                              // CH2 Compare Interrupt Disable
                     start = false;                                              // Stop
                 }
             } else {
-                TIM8->CCR2 = (uint16_t) tim8_ch2;                               //Set 2.5T
+                TIM8->CCR2 = (uint16_t) tim8_ch2;                               // Set 2.5T
                 if (!(TIM8->DIER & TIM_DIER_CC2IE)) {
-                    TIM8->DIER |= TIM_DIER_CC2IE;                               //CH2 Compare Interrupt Enable
+                    TIM8->DIER |= TIM_DIER_CC2IE;                               // CH2 Compare Interrupt Enable
                 }
             }
         }
@@ -152,68 +152,72 @@ void tim8_capture_handler(void) {
 
 void tim8_mark_handler(void) {
     mark = true;                                                                // For internal needs
-    stat = true;                                                                // Start
-    blue_led.set();                                                             //visualization
+    start = true;                                                               // Start
+    blue_led.set();                                                             // Visualization
 }
 
 void tim8_overflow_handler(void) {
     TIM8->CR1 &= ~TIM_CR1_CEN;                                                  // Disable counter
     
-    TIM8->CNT = (uint16_t) 0;                                                   //Reset Counter
+    TIM8->CNT = (uint16_t) 0;                                                   // Reset Counter
     
     TIM8->DIER &= ~TIM_DIER_CC2IE;                                              // Disable CH2 Interrupt
     TIM8->DIER &= ~TIM_DIER_CC3IE;                                              // Disable CH3 Interrupt
     TIM8->DIER &= ~TIM_DIER_CC4IE;                                              // Disable CH4 Interrupt
     TIM8->DIER &= ~TIM_DIER_UIE;                                                // Disable Update Interrupt
     
-    mark = false;                                                               // For internal needs
-    stat = false;                                                               // Stop
+    TIM8->CCR2 = (uint16_t) 0xFFFF;                                             // Preset CH2
     
-    red_led.set();
+    mark = false;                                                               // For internal needs
+    start = false;                                                              // Stop
+    
+    red_led.reset();
 }
 
 extern "C" void TIM8_CC_IRQHandler(void) {
-    if (TIM8->DIER & TIM_DIER_CC1IE) {                                          //Interrupt Enable Check
-        if (TIM8->SR & TIM_SR_CC1IF) {                                          //Check flag
+    if (TIM8->DIER & TIM_DIER_CC1IE) {                                          // Interrupt Enable Check
+        if (TIM8->SR & TIM_SR_CC1IF) {                                          // Check flag
             TIM8->SR &= ~TIM_SR_CC1IF;                                          // Clear flag
             tim8_capture_handler();
         }
     }
-    if (TIM8->DIER & TIM_DIER_CC2IE) {                                          //Interrupt Enable Check
-        if (TIM8->SR & TIM_SR_CC2IF) {                                          //Check flag
-            TIM8->SR &= ~TIM_SR_CC2IF;                                          //Clear flag
+    if (TIM8->DIER & TIM_DIER_CC2IE) {                                          // Interrupt Enable Check
+        if (TIM8->SR & TIM_SR_CC2IF) {                                          // Check flag
+            TIM8->SR &= ~TIM_SR_CC2IF;                                          // Clear flag
             tim8_mark_handler();
         }
     }
-    if (TIM8->DIER & TIM_DIER_CC3IE) {                                          //Interrupt Enable Check
-        if (TIM8->SR & TIM_SR_CC3IF) {                                          //Check flag
+    if (TIM8->DIER & TIM_DIER_CC3IE) {                                          // Interrupt Enable Check
+        if (TIM8->SR & TIM_SR_CC3IF) {                                          // Check flag
             TIM8->SR &= ~TIM_SR_CC3IF;                                          // Clear flag
         }
     }
-    if (TIM8->DIER & TIM_DIER_CC4IE) {                                          //Interrupt Enable Check
-        if (TIM8->SR & TIM_SR_CC4IF) {                                          //Check flag
-            TIM8->SR &= ~TIM_SR_CC4IF;                                          //Clear flag
+    if (TIM8->DIER & TIM_DIER_CC4IE) {                                          // Interrupt Enable Check
+        if (TIM8->SR & TIM_SR_CC4IF) {                                          // Check flag
+            TIM8->SR &= ~TIM_SR_CC4IF;                                          // Clear flag
         }
     }
 }
 
 extern "C" void TIM8_UP_TIM13_IRQHandler(void) {
-    if (TIM8->DIER & TIM_DIER_UIE) {                                            //Interrupt Enable Check
-        if (TIM8->SR & TIM_SR_UIF) {                                            //Check flag
-            TIM8->SR &= ~TIM_SR_UIF;                                            //Clear flag
+    if (TIM8->DIER & TIM_DIER_UIE) {                                            // Interrupt Enable Check
+        if (TIM8->SR & TIM_SR_UIF) {                                            // Check flag
+            TIM8->SR &= ~TIM_SR_UIF;                                            // Clear flag
             tim8_overflow_handler();
         }
     }
 }
 
 void init_tmr() {
-    NVIC_EnableIRQ(TIM8_CC_IRQn);                                               //Capture/compare
-    NVIC_EnableIRQ(TIM8_UP_TIM13_IRQn);                                         //Update
+    NVIC_EnableIRQ(TIM8_CC_IRQn);                                               // Capture/compare
+    NVIC_EnableIRQ(TIM8_UP_TIM13_IRQn);                                         // Update
 
-    TIM8->DIER |= TIM_DIER_CC1IE;                                               //Capture Interrupt Enable
-    TIM8->CCMR1 |= TIM_CCMR1_CC1S_0;                                            //Capture TI1
+    TIM8->DIER |= TIM_DIER_CC1IE;                                               // Capture Interrupt Enable
+    TIM8->CCMR1 |= TIM_CCMR1_CC1S_0;                                            // Capture TI1
     TIM8->CCER |= TIM_CCER_CC1P;                                                // Falling edge
-    TIM8->CCER |= TIM_CCER_CC1E;                                                //Capture Enable
+    TIM8->CCER |= TIM_CCER_CC1E;                                                // Capture Enable
+    
+    TIM8->CCR2 = (uint16_t) 0xFFFF;                                             // Preset CH2
     
     TIM8->CR1 |= TIM_CR1_URS;                                                   // Only overflow interrupt
 
