@@ -137,13 +137,13 @@ void tim8_capture_handler(void) {
                 tim8_ch2 = (uint32_t) ((tim8_cap1 * 2)+(tim8_cap1 / 2)); //Calc 2.5T
                 if (tim8_ch2 > ((uint32_t) 0xFFFF)) { //Check ovf for CH2
                     if (TIM8->DIER & TIM_DIER_CC2IE) {
-                        TIM8->DIER &= ~TIM_DIER_CC2IE; //Compare Interrupt Disable
+                        TIM8->DIER &= ~TIM_DIER_CC2IE; //CH2 Compare Interrupt Disable
                         start = false; // Stop
                     }
                 } else {
                     TIM8->CCR2 = (uint16_t) tim8_ch2; //Set 2.5T
                     if (!(TIM8->DIER & TIM_DIER_CC2IE)) {
-                        TIM8->DIER |= TIM_DIER_CC2IE; //Compare Interrupt Enable
+                        TIM8->DIER |= TIM_DIER_CC2IE; //CH2 Compare Interrupt Enable
                     }
                 }
             }
@@ -152,6 +152,7 @@ void tim8_capture_handler(void) {
 
 void tim8_mark_handler(void) {
     mark = true; // For internal needs
+    stat = true; // Start
     blue_led.set(); //visualization
 }
 
@@ -164,6 +165,9 @@ void tim8_overflow_handler(void) {
     TIM8->DIER &= ~TIM_DIER_CC3IE; // Disable CH3 Interrupt
     TIM8->DIER &= ~TIM_DIER_CC4IE; // Disable CH4 Interrupt
     TIM8->DIER &= ~TIM_DIER_UIE; // Disable Update Interrupt
+    
+    mark = false;
+    stat = false; // Stop
     
     red_led.set();
 }
