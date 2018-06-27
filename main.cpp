@@ -119,17 +119,19 @@ uint32_t tim8_ch2 = 0;
 bool mark = false;
 bool start = false;
 
-extern "C" void TIM8_CC_IRQHandler(void) {
-    if ((TIM8->SR & TIM_SR_CC1IF) && (TIM8->DIER & TIM_DIER_CC1IE)) { //Check capture flag
-        TIM8->SR &= ~TIM_SR_CC1IF; // Clear capture flag
-        if (!(TIM8->CR1 & TIM_CR1_CEN)) {
-            TIM8->CR1 |= TIM_CR1_CEN; //Counter Enable
-        } else {
+void tim8_capture_handler(void) {
+    if (!(TIM8->CR1 & TIM_CR1_CEN)) {
+        TIM8->CR1 |= TIM_CR1_CEN; // Enable counter
+
+        TIM8->DIER |= TIM_DIER_UIE; // Enable Update Interrupt
+
+        red_led.reset();
+    } else {
             TIM8->CNT = (uint16_t) 0; //Reset timer
-            tim8_cap1 = (uint16_t) TIM8->CCR1; //Buffering
+            tim8_cap1 = (uint16_t) TIM8->CCR1; //Read Capture
             if (mark) {
                 mark = false; // For internal needs
-                red_led.reset(); //visualization
+                blue_led.reset(); //visualization
                 TIM8->CCR2 = (uint16_t) 0xFFFF; //After Mark
             } else {
                 tim8_ch2 = (uint32_t) ((tim8_cap1 * 2)+(tim8_cap1 / 2)); //Calc 2.5T
@@ -146,35 +148,72 @@ extern "C" void TIM8_CC_IRQHandler(void) {
                 }
             }
         }
+}
+
+void tim8_mark_handler(void) {
+    mark = true; // For internal needs
+    blue_led.set(); //visualization
+}
+
+void tim8_overflow_handler(void) {
+    TIM8->CR1 &= ~TIM_CR1_CEN; // Disable counter
+    
+    TIM8->CNT = (uint16_t) 0;
+    
+    TIM8->DIER &= ~TIM_DIER_CC2IE; // Disable CH2 Interrupt
+    TIM8->DIER &= ~TIM_DIER_CC3IE; // Disable CH3 Interrupt
+    TIM8->DIER &= ~TIM_DIER_CC4IE; // Disable CH4 Interrupt
+    TIM8->DIER &= ~TIM_DIER_UIE; // Disable Update Interrupt
+    
+    red_led.set();
+}
+
+extern "C" void TIM8_CC_IRQHandler(void) {
+    if (TIM8->DIER & TIM_DIER_CC1IE) { //Interrupt Enable Check
+        if (TIM8->SR & TIM_SR_CC1IF) { //Check flag
+            TIM8->SR &= ~TIM_SR_CC1IF; // Clear flag
+            tim8_capture_handler();
+        }
     }
-    if ((TIM8->SR & TIM_SR_CC2IF) && (TIM8->DIER & TIM_DIER_CC2IE)) { //Check compare flag
-        TIM8->SR &= ~TIM_SR_CC2IF; //Clear compare flag
-        start = true; // Start
-        mark = true; // For internal needs
-        red_led.set(); //visualization
+    if (TIM8->DIER & TIM_DIER_CC2IE) { //Interrupt Enable Check
+        if (TIM8->SR & TIM_SR_CC2IF) { //Check flag
+            TIM8->SR &= ~TIM_SR_CC2IF; //Clear flag
+            tim8_mark_handler();
+        }
     }
-    //NVIC_ClearPendingIRQ(TIM8_IRQn);
+    if (TIM8->DIER & TIM_DIER_CC3IE) { //Interrupt Enable Check
+        if (TIM8->SR & TIM_SR_CC3IF) { //Check flag
+            TIM8->SR &= ~TIM_SR_CC3IF; // Clear flag
+        }
+    }
+    if (TIM8->DIER & TIM_DIER_CC4IE) { //Interrupt Enable Check
+        if (TIM8->SR & TIM_SR_CC4IF) { //Check flag
+            TIM8->SR &= ~TIM_SR_CC4IF; //Clear flag
+        }
+    }
+}
+
+extern "C" void TIM8_UP_TIM13_IRQHandler(void) {
+    if (TIM8->DIER & TIM_DIER_UIE) { //Interrupt Enable Check
+        if (TIM8->SR & TIM_SR_UIF) { //Check flag
+            TIM8->SR &= ~TIM_SR_UIF; //Clear flag
+            tim8_overflow_handler();
+        }
+    }
 }
 
 void init_tmr() {
-    NVIC_EnableIRQ(TIM8_CC_IRQn);
-
-    TIM8->CR1 &= ~TIM_CR1_CEN; //Counter Disable
+    NVIC_EnableIRQ(TIM8_CC_IRQn); //Capture/compare
+    NVIC_EnableIRQ(TIM8_UP_TIM13_IRQn); //Update
 
     TIM8->DIER |= TIM_DIER_CC1IE; //Capture Interrupt Enable
-
     TIM8->CCMR1 |= TIM_CCMR1_CC1S_0; //Capture TI1
-
-    TIM8->CCER |= TIM_CCER_CC1P; //  inverted/falling edge
-
+    TIM8->CCER |= TIM_CCER_CC1P; // Falling edge
     TIM8->CCER |= TIM_CCER_CC1E; //Capture Enable
+    
+    TIM8->CR1 |= TIM_CR1_URS; // Only overflow interrupt
 
-    //TIM8->CCER |= TIM_CCER_CC2E; //Compare Enable
-
-    TIM8->CCR2 = (uint16_t) 0xFFFF; //Preset compare
-
-    TIM8->PSC = (uint16_t) 83; // Prescaler
-
+    TIM8->PSC = (uint16_t) 84-1; // Prescaler
     TIM8->EGR |= TIM_EGR_UG; // Re-initialize 
 }
 
@@ -189,9 +228,6 @@ int main(void) {
     init_tmr();
     while (1) {
         delay_1s();
-        blue_led.set();
-        delay_1s();
-        blue_led.reset();
                 if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
                     sprintf(dma_str, "CH2 %u \r\n", tim8_ch2);
                     dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
