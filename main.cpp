@@ -127,10 +127,9 @@ extern "C" void TIM8_CC_IRQHandler(void) {
         } else {
             TIM8->CNT = (uint16_t) 0; //Reset timer
             tim8_cap1 = (uint16_t) TIM8->CCR1; //Buffering
-
             if (mark) {
-                mark = false;
-                red_led.reset();
+                mark = false; // For internal needs
+                red_led.reset(); //visualization
                 TIM8->CCR2 = (uint16_t) 0xFFFF; //After Mark
             } else {
                 tim8_ch2 = (uint32_t) ((tim8_cap1 * 2)+(tim8_cap1 / 2)); //Calc 2.5T
@@ -152,7 +151,7 @@ extern "C" void TIM8_CC_IRQHandler(void) {
         TIM8->SR &= ~TIM_SR_CC2IF; //Clear compare flag
         start = true; // Start
         mark = true; // For internal needs
-        red_led.set();
+        red_led.set(); //visualization
     }
     //NVIC_ClearPendingIRQ(TIM8_IRQn);
 }
@@ -193,11 +192,11 @@ int main(void) {
         blue_led.set();
         delay_1s();
         blue_led.reset();
-        if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
-            sprintf(dma_str, "CH2 %u \r\n", tim8_ch2);
-            dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
-            dma1_ch6.enable();
-        }
+                if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
+                    sprintf(dma_str, "CH2 %u \r\n", tim8_ch2);
+                    dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
+                    dma1_ch6.enable();
+                }
     }
     return 0;
 }
