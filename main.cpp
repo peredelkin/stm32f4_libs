@@ -42,10 +42,14 @@ void init_rcc(void) {
 
 pin blue_led(GPIOD, 15);
 pin red_led(GPIOD, 14);
+pin orange_led(GPIOD, 13);
+pin green_led(GPIOD, 12);
 
 void init_gpio() {
     blue_led.mode(GPIO_MODER_MODER15_0);
     red_led.mode(GPIO_MODER_MODER14_0);
+    orange_led.mode(GPIO_MODER_MODER13_0);
+    green_led.mode(GPIO_MODER_MODER12_0);
 
     pin usart2_tx(GPIOA, 2);
     usart2_tx.mode(GPIO_MODER_MODER2_1);
@@ -139,6 +143,11 @@ void TIM_CH3_ISR_EN(TIM_TypeDef *TIM) {
     TIM->DIER |= TIM_DIER_CC3IE; //Enable Interrupt
 }
 
+void TIM_CH4_ISR_EN(TIM_TypeDef *TIM) {
+    TIM->SR &= ~TIM_SR_CC4IF; //Clear Flag
+    TIM->DIER |= TIM_DIER_CC4IE; //Enable Interrupt
+}
+
 void capture_handler(TIM_TypeDef *TIM, capture_t *cap) {
     if (TIM->CR1 & TIM_CR1_CEN) {
         cap->previous = cap->current; //set prev
@@ -149,6 +158,11 @@ void capture_handler(TIM_TypeDef *TIM, capture_t *cap) {
         if ((cap->mark) < (cap->max)) {
             TIM->CCR2 = (uint16_t) (cap->mark + cap->current); //Set "Mark"
             TIM_CH2_ISR_EN(TIM); //Enable "Mark"
+        }
+        if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
+            sprintf(dma_str, "Cap %u \r\n", tim1_cap.capture);
+            dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
+            dma1_ch6.enable();
         }
         blue_led.reset();
     } else {
@@ -161,7 +175,16 @@ void capture_handler(TIM_TypeDef *TIM, capture_t *cap) {
 
 void mark_handler(TIM_TypeDef *TIM, capture_t *cap) {
     TIM->DIER &= ~TIM_DIER_CC2IE; //Disable "Mark"
-
+    
+    TIM->CR1 &= ~TIM_CR1_CEN; //Disable Timer
+    TIM->CNT = (uint16_t) (cap->capture /2) ; //For 1st tooth after mark
+    TIM3->CNT = (uint16_t) (cap->capture /2) ; //For 1st tooth after mark
+    TIM->CR1 |= TIM_CR1_CEN; //Enable Timer
+    
+    cap->previous = 0;
+    cap->current = 0;
+    cap->capture = 0;
+    cap->mark = 0;
     blue_led.set();
 }
 
@@ -170,6 +193,7 @@ void stop_handler(TIM_TypeDef *TIM, capture_t *cap) {
 
     TIM->CR1 &= ~TIM_CR1_CEN; //Disable Timer
     TIM->CNT = (uint16_t) 0; //Reset Timer
+    TIM3->CNT = (uint16_t) 0; //Reset Slave TIM3
 
     cap->previous = 0;
     cap->current = 0;
@@ -179,7 +203,7 @@ void stop_handler(TIM_TypeDef *TIM, capture_t *cap) {
     blue_led.reset();
 }
 
-void TIM_CH1_ISR(TIM_TypeDef *TIM) {
+void TIM1_CH1_ISR(TIM_TypeDef *TIM) {
     if (TIM->DIER & TIM_DIER_CC1IE) {
         if (TIM->SR & TIM_SR_CC1IF) {
             TIM->SR &= ~TIM_SR_CC1IF;
@@ -188,7 +212,7 @@ void TIM_CH1_ISR(TIM_TypeDef *TIM) {
     }
 }
 
-void TIM_CH2_ISR(TIM_TypeDef *TIM) {
+void TIM1_CH2_ISR(TIM_TypeDef *TIM) {
     if (TIM->DIER & TIM_DIER_CC2IE) {
         if (TIM->SR & TIM_SR_CC2IF) {
             TIM->SR &= ~TIM_SR_CC2IF;
@@ -197,7 +221,7 @@ void TIM_CH2_ISR(TIM_TypeDef *TIM) {
     }
 }
 
-void TIM_CH3_ISR(TIM_TypeDef *TIM) {
+void TIM1_CH3_ISR(TIM_TypeDef *TIM) {
     if (TIM->DIER & TIM_DIER_CC3IE) {
         if (TIM->SR & TIM_SR_CC3IF) {
             TIM->SR &= ~TIM_SR_CC3IF;
@@ -207,19 +231,58 @@ void TIM_CH3_ISR(TIM_TypeDef *TIM) {
 }
 
 extern "C" void TIM1_CC_IRQHandler(void) {
-    TIM_CH1_ISR(TIM1);
-    TIM_CH2_ISR(TIM1);
-    TIM_CH3_ISR(TIM1);
+    TIM1_CH1_ISR(TIM1);
+    TIM1_CH2_ISR(TIM1);
+    TIM1_CH3_ISR(TIM1);
+}
+
+void TIM3_CH1_ISR(TIM_TypeDef *TIM) {
+    if (TIM->DIER & TIM_DIER_CC1IE) {
+        if (TIM->SR & TIM_SR_CC1IF) {
+            TIM->SR &= ~TIM_SR_CC1IF;
+            green_led.toggle();
+        }
+    }
+}
+
+void TIM3_CH2_ISR(TIM_TypeDef *TIM) {
+    if (TIM->DIER & TIM_DIER_CC2IE) {
+        if (TIM->SR & TIM_SR_CC2IF) {
+            TIM->SR &= ~TIM_SR_CC2IF;
+
+        }
+    }
+}
+
+void TIM3_CH3_ISR(TIM_TypeDef *TIM) {
+    if (TIM->DIER & TIM_DIER_CC3IE) {
+        if (TIM->SR & TIM_SR_CC3IF) {
+            TIM->SR &= ~TIM_SR_CC3IF;
+
+        }
+    }
+}
+
+void TIM3_CH4_ISR(TIM_TypeDef *TIM) {
+    if (TIM->DIER & TIM_DIER_CC4IE) {
+        if (TIM->SR & TIM_SR_CC4IF) {
+            TIM->SR &= ~TIM_SR_CC4IF;
+
+        }
+    }
 }
 
 extern "C" void TIM3_IRQHandler(void) {
-
+    TIM3_CH1_ISR(TIM3);
+    TIM3_CH2_ISR(TIM3);
+    TIM3_CH3_ISR(TIM3);
+    TIM3_CH4_ISR(TIM3);
 }
 
 void init_tmr1() {
     NVIC_EnableIRQ(TIM1_CC_IRQn); // Capture/compare
 
-    TIM1->DIER |= TIM_DIER_CC1IE; // Capture Interrupt Enable
+    TIM_CH1_ISR_EN(TIM1); //Capture Interrupt Enable
 
     TIM1->CCMR1 |= TIM_CCMR1_CC1S_0; // Capture TI1
 
@@ -227,13 +290,37 @@ void init_tmr1() {
 
     TIM1->CCER |= TIM_CCER_CC1E; // Capture Enable
 
-    TIM1->PSC = (uint16_t) 168 - 1; // Prescaler
+    TIM1->PSC = (uint16_t) 84 - 1; // Prescaler
 
-    TIM1->EGR = TIM_EGR_UG; // Re-initialize 
+    TIM1->EGR = TIM_EGR_UG; // Re-initialize
+
+    //Master
+
+    TIM1->CR2 |= TIM_CR2_MMS_0; // Master 001 Enable
+
+    TIM1->SMCR |= TIM_SMCR_MSM; // Fo better Sync
+
+    TIM1->SMCR &= ~TIM_SMCR_TS; // ITR0
 }
 
 void init_tmr3() {
-    //    NVIC_EnableIRQ(TIM3_IRQn);
+    NVIC_EnableIRQ(TIM3_IRQn);
+
+    TIM_CH1_ISR_EN(TIM3); //CH1 Interrupt Enable
+
+    TIM3->PSC = (uint16_t) 42 - 1; // Prescaler
+
+    TIM3->EGR = TIM_EGR_UG; // Re-initialize
+
+    //Slave
+
+    TIM3->SMCR |= TIM_SMCR_MSM; // Fo better Sync
+
+    TIM3->SMCR |= (TIM_SMCR_SMS_2 | TIM_SMCR_SMS_0); // Slave 101 Gated Mode
+
+    TIM3->SMCR &= ~TIM_SMCR_TS; // ITR0
+
+    TIM3->CR1 |= TIM_CR1_CEN; //Need Enable in Slave
 }
 
 /*
@@ -247,12 +334,12 @@ int main(void) {
     init_tmr3();
     init_tmr1();
     while (1) {
-        delay_1s();
-        //        if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
-        //            sprintf(dma_str, "RPM %u \r\n", 1000000 / tim_cap);
-        //            dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
-        //            dma1_ch6.enable();
-        //        }
+        //delay_1s();
+        //                if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
+        //                    sprintf(dma_str, "RPM %u \r\n", 1000000 / tim1_cap.capture);
+        //                    dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
+        //                    dma1_ch6.enable();
+        //                }
     }
     return 0;
 }
