@@ -122,6 +122,7 @@ typedef struct {
     uint16_t previous = 0;
     uint16_t current = 0;
     uint16_t capture = 0;
+    uint16_t half_capture = 0;
     uint32_t mark = 0;
     const uint16_t max = 65535;
 } capture_t;
@@ -153,7 +154,8 @@ void capture_handler(TIM_TypeDef *TIM, capture_t *cap) {
         cap->previous = cap->current; //set prev
         cap->current = (uint16_t) TIM->CCR1; //set cur
         cap->capture = (uint16_t) (cap->max + 1 + (cap->current - cap->previous)); //calc cap
-        cap->mark = (cap->capture * 2)+(cap->capture / 2); //calc mark
+        cap->half_capture = cap->capture / 2;
+        cap->mark = (cap->capture * 2)+(cap->half_capture); //calc mark
         TIM->CCR3 = (uint16_t) ((cap->max) + cap->current); //set "Stop"
         if ((cap->mark) < (cap->max)) {
             TIM->CCR2 = (uint16_t) (cap->mark + cap->current); //Set "Mark"
@@ -177,14 +179,12 @@ void mark_handler(TIM_TypeDef *TIM, capture_t *cap) {
     TIM->DIER &= ~TIM_DIER_CC2IE; //Disable "Mark"
     
     TIM->CR1 &= ~TIM_CR1_CEN; //Disable Timer
-    TIM->CNT = (uint16_t) (cap->capture /2) ; //For 1st tooth after mark
-    TIM3->CNT = (uint16_t) (cap->capture /2) ; //For 1st tooth after mark
+    TIM->CNT = (uint16_t) (cap->half_capture) ; //For 1st tooth after mark
+    TIM3->CNT = (uint16_t) (cap->half_capture) ; //For 1st tooth after mark
     TIM->CR1 |= TIM_CR1_CEN; //Enable Timer
     
     cap->previous = 0;
     cap->current = 0;
-    cap->capture = 0;
-    cap->mark = 0;
     blue_led.set();
 }
 
