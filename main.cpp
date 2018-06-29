@@ -122,7 +122,22 @@ typedef struct {
     const uint16_t max = 65535;
 } capture_t;
 
-capture_t tim1_ch1_cap;
+capture_t tim1_cap;
+
+void TIM_CH1_ISR_EN(TIM_TypeDef *TIM) {
+    TIM->SR &= ~TIM_SR_CC1IF; //Clear Flag
+    TIM->DIER |= TIM_DIER_CC1IE; //Enable Interrupt
+}
+
+void TIM_CH2_ISR_EN(TIM_TypeDef *TIM) {
+    TIM->SR &= ~TIM_SR_CC2IF; //Clear Flag
+    TIM->DIER |= TIM_DIER_CC2IE; //Enable Interrupt
+}
+
+void TIM_CH3_ISR_EN(TIM_TypeDef *TIM) {
+    TIM->SR &= ~TIM_SR_CC3IF; //Clear Flag
+    TIM->DIER |= TIM_DIER_CC3IE; //Enable Interrupt
+}
 
 void capture_handler(TIM_TypeDef *TIM, capture_t *cap) {
     if (TIM->CR1 & TIM_CR1_CEN) {
@@ -130,16 +145,15 @@ void capture_handler(TIM_TypeDef *TIM, capture_t *cap) {
         cap->current = (uint16_t) TIM->CCR1; //set cur
         cap->capture = (uint16_t) (cap->max + 1 + (cap->current - cap->previous)); //calc cap
         cap->mark = (cap->capture * 2)+(cap->capture / 2); //calc mark
-        TIM->CCR3 = (uint16_t) (cap->max + cap->current); //set "Stop"
+        TIM->CCR3 = (uint16_t) ((cap->max) + cap->current); //set "Stop"
         if ((cap->mark) < (cap->max)) {
             TIM->CCR2 = (uint16_t) (cap->mark + cap->current); //Set "Mark"
-            TIM->DIER |= TIM_DIER_CC2IE; //Enable "Mark"
-        } else {
-            blue_led.reset();
+            TIM_CH2_ISR_EN(TIM); //Enable "Mark"
         }
+        blue_led.reset();
     } else {
         TIM->CCR3 = (uint16_t) cap->max; //Set "Stop"
-        TIM->DIER |= TIM_DIER_CC3IE; //Enable "Stop"
+        TIM_CH3_ISR_EN(TIM); //Enable "Stop"
         TIM->CR1 |= TIM_CR1_CEN; //Enable Timer
         red_led.set();
     }
@@ -147,7 +161,7 @@ void capture_handler(TIM_TypeDef *TIM, capture_t *cap) {
 
 void mark_handler(TIM_TypeDef *TIM, capture_t *cap) {
     TIM->DIER &= ~TIM_DIER_CC2IE; //Disable "Mark"
-    
+
     blue_led.set();
 }
 
@@ -165,37 +179,37 @@ void stop_handler(TIM_TypeDef *TIM, capture_t *cap) {
     blue_led.reset();
 }
 
-void TIM_CH1_IRQHandler(TIM_TypeDef *TIM) {
+void TIM_CH1_ISR(TIM_TypeDef *TIM) {
     if (TIM->DIER & TIM_DIER_CC1IE) {
         if (TIM->SR & TIM_SR_CC1IF) {
             TIM->SR &= ~TIM_SR_CC1IF;
-            capture_handler(TIM, &tim1_ch1_cap);
+            capture_handler(TIM, &tim1_cap);
         }
     }
 }
 
-void TIM_CH2_IRQHandler(TIM_TypeDef *TIM) {
+void TIM_CH2_ISR(TIM_TypeDef *TIM) {
     if (TIM->DIER & TIM_DIER_CC2IE) {
         if (TIM->SR & TIM_SR_CC2IF) {
             TIM->SR &= ~TIM_SR_CC2IF;
-            mark_handler(TIM, &tim1_ch1_cap);
+            mark_handler(TIM, &tim1_cap);
         }
     }
 }
 
-void TIM_CH3_IRQHandler(TIM_TypeDef *TIM) {
+void TIM_CH3_ISR(TIM_TypeDef *TIM) {
     if (TIM->DIER & TIM_DIER_CC3IE) {
         if (TIM->SR & TIM_SR_CC3IF) {
             TIM->SR &= ~TIM_SR_CC3IF;
-            stop_handler(TIM, &tim1_ch1_cap);
+            stop_handler(TIM, &tim1_cap);
         }
     }
 }
 
 extern "C" void TIM1_CC_IRQHandler(void) {
-    TIM_CH1_IRQHandler(TIM1);
-    TIM_CH2_IRQHandler(TIM1);
-    TIM_CH3_IRQHandler(TIM1);
+    TIM_CH1_ISR(TIM1);
+    TIM_CH2_ISR(TIM1);
+    TIM_CH3_ISR(TIM1);
 }
 
 extern "C" void TIM3_IRQHandler(void) {
