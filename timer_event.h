@@ -24,12 +24,16 @@ public:
         TIM = tim;
     }
 
-    cnt_type CountRead() {
+    cnt_type CNTRead() {
         return (cnt_type) (TIM->CNT);
     }
 
-    void CountWrite(cnt_type count) {
+    void CNTWrite(cnt_type count) {
         TIM->CNT = count;
+    }
+    
+    void PSCSet(uint16_t psc) {
+        TIM->PSC = psc;
     }
 
     void Disable() {
