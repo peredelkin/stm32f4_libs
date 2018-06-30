@@ -16,6 +16,7 @@
 #include <usart.h>
 #include <dma.h>
 #include <stdio.h>
+#include <timer_event.h>
 
 static void delay_1s(void) {
     int counter = 1000;
@@ -119,105 +120,33 @@ void dma_init(void) {
 }
 
 typedef struct {
+    bool start_mark = false;
     uint16_t previous = 0;
     uint16_t current = 0;
     uint16_t capture = 0;
-    uint16_t half_capture = 0;
     uint32_t mark = 0;
     const uint16_t max = 65535;
 } capture_t;
 
 capture_t tim1_cap;
 
-class timer {
-public:
-    TIM_TypeDef *TIM;
+timer <uint16_t> timer_1(TIM1);
+timer <uint16_t> timer_3(TIM3);
 
-    timer(TIM_TypeDef *tim) {
-        TIM = tim;
-    }
 
-    void Disable() {
-        TIM->CR1 &= ~TIM_CR1_CEN;
-    }
+timer_ch <TIM_DIER_CC1IE, TIM_SR_CC1IF, uint16_t> tim1_ch1(&timer_1, &timer_1.TIM->CCR1); //capture
+timer_ch <TIM_DIER_CC2IE, TIM_SR_CC2IF, uint16_t> tim1_ch2(&timer_1, &timer_1.TIM->CCR2); //mark
+timer_ch <TIM_DIER_CC3IE, TIM_SR_CC3IF, uint16_t> tim1_ch3(&timer_1, &timer_1.TIM->CCR3); //stop
 
-    void Enable() {
-        TIM->CR1 |= TIM_CR1_CEN;
-    }
+timer_ch <TIM_DIER_CC1IE, TIM_SR_CC1IF, uint16_t> tim3_ch1(&timer_3, &timer_3.TIM->CCR1);
+timer_ch <TIM_DIER_CC2IE, TIM_SR_CC2IF, uint16_t> tim3_ch2(&timer_3, &timer_3.TIM->CCR2);
 
-    bool Status() {
-        if (TIM->CR1 & TIM_CR1_CEN) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-};
-
-timer timer_1(TIM1);
-timer timer_3(TIM3);
-
-template <uint16_t interrupt_mask, uint16_t status_mask,typename ccr_type> class timer_ch {
-    typedef void (*timer_event) ();
-private:
-    __IO uint32_t *ccr;
-    timer *tim;
-    timer_event event = NULL;
-    bool once = false;
-public:
-
-    timer_ch(timer *n_timer,volatile uint32_t* n_ccr) {
-        ccr = n_ccr;
-        tim = n_timer;
-    }
-    
-    ccr_type CapComRead() {
-        return *ccr;
-    }
-    
-    void CapComWrite(ccr_type cap_com) {
-        *ccr = cap_com;
-    }
-
-    void EventSet(timer_event event_set, bool event_once) {
-        event = event_set;
-        once = event_once;
-    }
-
-    void ITEnable() {
-        tim->TIM->SR &= ~status_mask;
-        tim->TIM->DIER |= interrupt_mask;
-    }
-
-    void ITDisable() {
-        tim->TIM->DIER &= ~interrupt_mask;
-    }
-
-    void ITHandler() {
-        if (tim->TIM->DIER & interrupt_mask) {
-            if (tim->TIM->SR & status_mask) {
-                tim->TIM->SR &= ~status_mask;
-                if (event) event();
-                if (once) ITDisable();
-            }
-        }
-    }
-};
-
-timer_ch <TIM_DIER_CC1IE, TIM_SR_CC1IF,uint16_t> tim1_ch1(&timer_1,&timer_1.TIM->CCR1);
-timer_ch <TIM_DIER_CC2IE, TIM_SR_CC2IF,uint16_t> tim1_ch2(&timer_1,&timer_1.TIM->CCR2);
-timer_ch <TIM_DIER_CC3IE, TIM_SR_CC3IF,uint16_t> tim1_ch3(&timer_1,&timer_1.TIM->CCR3);
-
-timer_ch <TIM_DIER_CC1IE, TIM_SR_CC1IF,uint16_t> tim3_ch1(&timer_3,&timer_3.TIM->CCR1);
-timer_ch <TIM_DIER_CC2IE, TIM_SR_CC2IF,uint16_t> tim3_ch2(&timer_3,&timer_3.TIM->CCR2);
-
-void capture_handler(TIM_TypeDef *TIM, capture_t *cap) {
+void capture_CPS(capture_t *cap) { //Capture crankshaft position sensor
     if (timer_1.Status()) {
         cap->previous = cap->current; //set prev
         cap->current = tim1_ch1.CapComRead(); //set cur
         cap->capture = (uint16_t) (cap->max + 1 + (cap->current - cap->previous)); //calc cap
-        cap->half_capture = cap->capture / 2;
-        cap->mark = (cap->capture * 2)+(cap->half_capture); //calc mark
+        cap->mark = (cap->capture * 2)+(cap->capture / 2); //calc mark
         tim1_ch3.CapComWrite(((cap->max) + cap->current)); //set "Stop"
         if ((cap->mark) < (cap->max)) {
             tim1_ch2.CapComWrite((cap->mark + cap->current)); //Set "Mark"
@@ -232,39 +161,39 @@ void capture_handler(TIM_TypeDef *TIM, capture_t *cap) {
     }
 }
 
-void mark_handler(TIM_TypeDef *TIM, capture_t *cap) {
+void mark_CPS(capture_t *cap) {
     if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
-        sprintf(dma_str, "RPM %u \r\n", 1000000 / tim1_cap.capture);
+        sprintf(dma_str, "RPM %u \r\n", 1000000 / cap->capture);
         dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
         dma1_ch6.enable();
     }
     blue_led.set();
 }
 
-void stop_handler(TIM_TypeDef *TIM, capture_t *cap) {
-
+void stop_CPS(TIM_TypeDef *TIM, capture_t *cap) {
     timer_1.Disable(); //Disable Timer
-    TIM->CNT = (uint16_t) 0; //Reset Timer
-    TIM3->CNT = (uint16_t) 0; //Reset Slave TIM3
+    timer_1.CountWrite(0); //Reset Timer
+    timer_3.CountWrite(0); //Reset Slave TIM3
 
     cap->previous = 0;
     cap->current = 0;
     cap->capture = 0;
     cap->mark = 0;
+    
     red_led.reset();
     blue_led.reset();
 }
 
 void tim1_ch1_event(void) {
-    capture_handler(TIM1, &tim1_cap);
+    capture_CPS(&tim1_cap);
 }
 
 void tim1_ch2_event(void) {
-    mark_handler(TIM1, &tim1_cap);
+    mark_CPS(&tim1_cap);
 }
 
 void tim1_ch3_event(void) {
-    stop_handler(TIM1, &tim1_cap);
+    stop_CPS(TIM1, &tim1_cap);
 }
 
 void tim3_ch1_event(void) {
@@ -306,22 +235,18 @@ void init_tmr1() {
     TIM1->SMCR |= TIM_SMCR_MSM; // Fo better Sync
 
     TIM1->SMCR &= ~TIM_SMCR_TS; // ITR0
-    
+
     //
 
-    tim1_ch1.EventSet(tim1_ch1_event, false);
-    tim1_ch2.EventSet(tim1_ch2_event, true);
-    tim1_ch3.EventSet(tim1_ch3_event, true);
+    tim1_ch1.EventSet(tim1_ch1_event, false); //capture
+    tim1_ch2.EventSet(tim1_ch2_event, true); //mark
+    tim1_ch3.EventSet(tim1_ch3_event, true); //stop
 
     tim1_ch1.ITEnable(); // Capture Interrupt Enable
 }
 
 void init_tmr3() {
     NVIC_EnableIRQ(TIM3_IRQn);
-
-    TIM3->CCR1 = (uint16_t) 0;
-
-    TIM3->CCR2 = (uint16_t) 1000;
 
     TIM3->PSC = (uint16_t) 84 - 1; // Prescaler
 
@@ -336,9 +261,12 @@ void init_tmr3() {
     TIM3->SMCR &= ~TIM_SMCR_TS; // ITR0
 
     timer_3.Enable(); //Need Enable in Slave
-    
-    //
 
+    //
+    
+    tim3_ch1.CapComWrite(20000);
+    tim3_ch2.CapComWrite(30000);
+    
     tim3_ch1.EventSet(tim3_ch1_event, false);
     tim3_ch2.EventSet(tim3_ch2_event, false);
 
