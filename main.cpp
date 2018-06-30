@@ -132,70 +132,102 @@ capture_t tim1_cap;
 class timer {
 public:
     TIM_TypeDef *TIM;
+
     timer(TIM_TypeDef *tim) {
         TIM = tim;
+    }
+
+    void Disable() {
+        TIM->CR1 &= ~TIM_CR1_CEN;
+    }
+
+    void Enable() {
+        TIM->CR1 |= TIM_CR1_CEN;
+    }
+
+    bool Status() {
+        if (TIM->CR1 & TIM_CR1_CEN) {
+            return true;
+        } else {
+            return false;
+        }
     }
 };
 
 timer timer_1(TIM1);
 timer timer_3(TIM3);
 
-template <uint16_t interrupt_mask,uint16_t status_mask> class timer_ch {
+template <uint16_t interrupt_mask, uint16_t status_mask,typename ccr_type> class timer_ch {
     typedef void (*timer_event) ();
 private:
+    __IO uint32_t *ccr;
     timer *tim;
     timer_event event = NULL;
     bool once = false;
 public:
-    timer_ch (timer *n_timer) {
+
+    timer_ch(timer *n_timer,volatile uint32_t* n_ccr) {
+        ccr = n_ccr;
         tim = n_timer;
     }
-    void EventSet(timer_event event_set,bool event_once) {
+    
+    ccr_type CapComRead() {
+        return *ccr;
+    }
+    
+    void CapComWrite(ccr_type cap_com) {
+        *ccr = cap_com;
+    }
+
+    void EventSet(timer_event event_set, bool event_once) {
         event = event_set;
         once = event_once;
     }
+
     void ITEnable() {
         tim->TIM->SR &= ~status_mask;
         tim->TIM->DIER |= interrupt_mask;
     }
+
     void ITDisable() {
         tim->TIM->DIER &= ~interrupt_mask;
     }
+
     void ITHandler() {
-        if(tim->TIM->DIER & interrupt_mask) {
-            if(tim->TIM->SR & status_mask) {
+        if (tim->TIM->DIER & interrupt_mask) {
+            if (tim->TIM->SR & status_mask) {
                 tim->TIM->SR &= ~status_mask;
-                if(event) event();
-                if(once) ITDisable();
+                if (event) event();
+                if (once) ITDisable();
             }
         }
     }
 };
 
-timer_ch <TIM_DIER_CC1IE,TIM_SR_CC1IF> tim1_ch1(&timer_1);
-timer_ch <TIM_DIER_CC2IE,TIM_SR_CC2IF> tim1_ch2(&timer_1);
-timer_ch <TIM_DIER_CC3IE,TIM_SR_CC3IF> tim1_ch3(&timer_1);
+timer_ch <TIM_DIER_CC1IE, TIM_SR_CC1IF,uint16_t> tim1_ch1(&timer_1,&timer_1.TIM->CCR1);
+timer_ch <TIM_DIER_CC2IE, TIM_SR_CC2IF,uint16_t> tim1_ch2(&timer_1,&timer_1.TIM->CCR2);
+timer_ch <TIM_DIER_CC3IE, TIM_SR_CC3IF,uint16_t> tim1_ch3(&timer_1,&timer_1.TIM->CCR3);
 
-timer_ch <TIM_DIER_CC1IE,TIM_SR_CC1IF> tim3_ch1(&timer_3);
-timer_ch <TIM_DIER_CC2IE,TIM_SR_CC2IF> tim3_ch2(&timer_3);
+timer_ch <TIM_DIER_CC1IE, TIM_SR_CC1IF,uint16_t> tim3_ch1(&timer_3,&timer_3.TIM->CCR1);
+timer_ch <TIM_DIER_CC2IE, TIM_SR_CC2IF,uint16_t> tim3_ch2(&timer_3,&timer_3.TIM->CCR2);
 
 void capture_handler(TIM_TypeDef *TIM, capture_t *cap) {
-    if (TIM->CR1 & TIM_CR1_CEN) {
+    if (timer_1.Status()) {
         cap->previous = cap->current; //set prev
-        cap->current = (uint16_t) TIM->CCR1; //set cur
+        cap->current = tim1_ch1.CapComRead(); //set cur
         cap->capture = (uint16_t) (cap->max + 1 + (cap->current - cap->previous)); //calc cap
         cap->half_capture = cap->capture / 2;
         cap->mark = (cap->capture * 2)+(cap->half_capture); //calc mark
-        TIM->CCR3 = (uint16_t) ((cap->max) + cap->current); //set "Stop"
+        tim1_ch3.CapComWrite(((cap->max) + cap->current)); //set "Stop"
         if ((cap->mark) < (cap->max)) {
-            TIM->CCR2 = (uint16_t) (cap->mark + cap->current); //Set "Mark"
-            tim1_ch2.ITEnable();//Enable "Mark"
+            tim1_ch2.CapComWrite((cap->mark + cap->current)); //Set "Mark"
+            tim1_ch2.ITEnable(); //Enable "Mark"
         }
         blue_led.reset();
     } else {
-        TIM->CCR3 = (uint16_t) cap->max; //Set "Stop"
+        tim1_ch3.CapComWrite(cap->max); //Set "Stop"
         tim1_ch3.ITEnable(); //Enable "Stop"
-        TIM->CR1 |= TIM_CR1_CEN; //Enable Timer
+        timer_1.Enable(); //Enable Timer
         red_led.set();
     }
 }
@@ -211,7 +243,7 @@ void mark_handler(TIM_TypeDef *TIM, capture_t *cap) {
 
 void stop_handler(TIM_TypeDef *TIM, capture_t *cap) {
 
-    TIM->CR1 &= ~TIM_CR1_CEN; //Disable Timer
+    timer_1.Disable(); //Disable Timer
     TIM->CNT = (uint16_t) 0; //Reset Timer
     TIM3->CNT = (uint16_t) 0; //Reset Slave TIM3
 
@@ -275,18 +307,20 @@ void init_tmr1() {
 
     TIM1->SMCR &= ~TIM_SMCR_TS; // ITR0
     
-    tim1_ch1.EventSet(tim1_ch1_event,false);
-    tim1_ch2.EventSet(tim1_ch2_event,true);
-    tim1_ch3.EventSet(tim1_ch3_event,true);
-    
+    //
+
+    tim1_ch1.EventSet(tim1_ch1_event, false);
+    tim1_ch2.EventSet(tim1_ch2_event, true);
+    tim1_ch3.EventSet(tim1_ch3_event, true);
+
     tim1_ch1.ITEnable(); // Capture Interrupt Enable
 }
 
 void init_tmr3() {
     NVIC_EnableIRQ(TIM3_IRQn);
-    
+
     TIM3->CCR1 = (uint16_t) 0;
-    
+
     TIM3->CCR2 = (uint16_t) 1000;
 
     TIM3->PSC = (uint16_t) 84 - 1; // Prescaler
@@ -301,11 +335,13 @@ void init_tmr3() {
 
     TIM3->SMCR &= ~TIM_SMCR_TS; // ITR0
 
-    TIM3->CR1 |= TIM_CR1_CEN; //Need Enable in Slave
+    timer_3.Enable(); //Need Enable in Slave
     
-    tim3_ch1.EventSet(tim3_ch1_event,false);
-    tim3_ch2.EventSet(tim3_ch2_event,false);
-    
+    //
+
+    tim3_ch1.EventSet(tim3_ch1_event, false);
+    tim3_ch2.EventSet(tim3_ch2_event, false);
+
     tim3_ch1.ITEnable();
     tim3_ch2.ITEnable();
 }
