@@ -120,6 +120,7 @@ void dma_init(void) {
 }
 
 typedef struct {
+    uint16_t angle = 0;
     bool start_mark = false;
     uint16_t previous = 0;
     uint16_t current = 0;
@@ -130,7 +131,7 @@ typedef struct {
 
 capture_t tim1_cap;
 
-timer <uint16_t> timer_1(TIM1);
+timer <uint16_t> timer_1(TIM1); // Capture crankshaft position sensor
 timer <uint16_t> timer_3(TIM3);
 
 
@@ -141,7 +142,7 @@ timer_ch <TIM_DIER_CC3IE, TIM_SR_CC3IF, uint16_t> tim1_ch3(&timer_1, &timer_1.TI
 timer_ch <TIM_DIER_CC1IE, TIM_SR_CC1IF, uint16_t> tim3_ch1(&timer_3, &timer_3.TIM->CCR1);
 timer_ch <TIM_DIER_CC2IE, TIM_SR_CC2IF, uint16_t> tim3_ch2(&timer_3, &timer_3.TIM->CCR2);
 
-void capture_CPS(capture_t *cap) { //Capture crankshaft position sensor
+void capture_CPS(capture_t *cap) { 
     if (timer_1.Status()) {
         cap->previous = cap->current; //set prev
         cap->current = tim1_ch1.CapComRead(); //set cur
@@ -162,19 +163,16 @@ void capture_CPS(capture_t *cap) { //Capture crankshaft position sensor
 }
 
 void mark_CPS(capture_t *cap) {
-    if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
-        sprintf(dma_str, "RPM %u \r\n", 1000000 / cap->capture);
-        dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
-        dma1_ch6.enable();
-    }
+    cap->start_mark = true;
     blue_led.set();
 }
 
-void stop_CPS(TIM_TypeDef *TIM, capture_t *cap) {
+void stop_CPS(capture_t *cap) {
     timer_1.Disable(); //Disable Timer
-    timer_1.CountWrite(0); //Reset Timer
-    timer_3.CountWrite(0); //Reset Slave TIM3
+    timer_1.CNTWrite(0); //Reset Timer
+    timer_3.CNTWrite(0); //Reset Slave TIM3
 
+    cap->start_mark = false;
     cap->previous = 0;
     cap->current = 0;
     cap->capture = 0;
@@ -193,7 +191,7 @@ void tim1_ch2_event(void) {
 }
 
 void tim1_ch3_event(void) {
-    stop_CPS(TIM1, &tim1_cap);
+    stop_CPS(&tim1_cap);
 }
 
 void tim3_ch1_event(void) {
@@ -224,7 +222,7 @@ void init_tmr1() {
 
     TIM1->CCER |= TIM_CCER_CC1E; // Capture Enable
 
-    TIM1->PSC = (uint16_t) 168 - 1; // Prescaler
+    timer_1.PSCSet(168 - 1); // Prescaler
 
     TIM1->EGR = TIM_EGR_UG; // Re-initialize
 
@@ -248,7 +246,7 @@ void init_tmr1() {
 void init_tmr3() {
     NVIC_EnableIRQ(TIM3_IRQn);
 
-    TIM3->PSC = (uint16_t) 84 - 1; // Prescaler
+    timer_3.PSCSet(84 - 1); // Prescaler
 
     TIM3->EGR = TIM_EGR_UG; // Re-initialize
 
