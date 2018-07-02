@@ -16,87 +16,77 @@
 
 #include <stm32f4xx.h>
 
-template <typename cnt_type> class timer {
-public:
-    TIM_TypeDef *TIM;
-
-    timer(TIM_TypeDef *tim) {
-        TIM = tim;
-    }
-
-    cnt_type CNTRead() {
-        return (cnt_type) (TIM->CNT);
-    }
-
-    void CNTWrite(cnt_type count) {
-        TIM->CNT = count;
-    }
-    
-    void PSCSet(uint16_t psc) {
-        TIM->PSC = psc;
-    }
-
-    void Disable() {
-        TIM->CR1 &= ~TIM_CR1_CEN;
-    }
-
-    void Enable() {
-        TIM->CR1 |= TIM_CR1_CEN;
-    }
-
-    bool Status() {
-        if (TIM->CR1 & TIM_CR1_CEN) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-};
-
-template <uint16_t interrupt_mask, uint16_t status_mask, typename cnt_type> class timer_ch {
-    typedef void (*timer_event) ();
+template <typename bit_capacity, const uint16_t DIER_Mask, const uint16_t SR_Mask,
+const uint16_t EGR_Mask> class tim_cc_it_event {
+    typedef void (*timer_event)();
 private:
-    __IO uint32_t *ccr;
-    timer <cnt_type> *tim;
-    timer_event event = NULL;
-    bool once = false;
+    TIM_TypeDef* TIM; //Timer
+    __IO uint32_t* CCR; //capture/compare register
+    timer_event Event = NULL; //Calling Event
+    bool Once_Dier = false; //Reset DIER if True
 public:
+    //DIER
 
-    timer_ch(timer <cnt_type> *n_timer, volatile uint32_t* n_ccr) {
-        ccr = n_ccr;
-        tim = n_timer;
+    uint16_t DIER_Read() {
+        return (TIM->DIER & DIER_Mask);
     }
 
-    cnt_type CapComRead() {
-        return *ccr;
+    void DIER_Set() {
+        TIM->DIER |= DIER_Mask;
     }
 
-    void CapComWrite(cnt_type cap_com) {
-        *ccr = cap_com;
+    void DIER_Reset() {
+        TIM->DIER &= ~DIER_Mask;
+    }
+    //SR
+
+    uint16_t SR_Read() {
+        return (TIM->SR & SR_Mask);
     }
 
-    void EventSet(timer_event event_set, bool event_once) {
-        event = event_set;
-        once = event_once;
+    void SR_Reset() {
+        TIM->SR &= ~SR_Mask;
+    }
+    //EGR
+
+    void EGR_Set() {
+        TIM->EGR = EGR_Mask;
+    }
+    //CCR
+
+    bit_capacity CCR_Read() {
+        return *CCR;
     }
 
-    void ITEnable() {
-        tim->TIM->SR &= ~status_mask;
-        tim->TIM->DIER |= interrupt_mask;
+    void CCR_Write(bit_capacity data) {
+        *CCR = data;
     }
+    //Event
 
-    void ITDisable() {
-        tim->TIM->DIER &= ~interrupt_mask;
+    void Event_Set(timer_event EVENT_Set) {
+        Event = EVENT_Set;
     }
+    //Handler
 
     void ITHandler() {
-        if (tim->TIM->DIER & interrupt_mask) {
-            if (tim->TIM->SR & status_mask) {
-                tim->TIM->SR &= ~status_mask;
-                if (event) event();
-                if (once) ITDisable();
+        if (TIM->DIER & DIER_Mask) { //Check IT Enabled
+            if (TIM->SR & SR_Mask) { //Check Status
+                TIM->SR &= ~SR_Mask; //Reset Status
+                if (Event) { //Check Event
+                    Event(); //Call Event
+                }
+                if (Once_Dier) { //Check Once Call Interrupt
+                    TIM->DIER &= ~DIER_Mask; //Reset Interrupt
+                }
             }
         }
+    }
+
+    tim_cc_it_event(TIM_TypeDef* TIM_Set, __IO uint32_t * CCR_Set, timer_event Event_Set, bool Once_Dier_Set) {
+        TIM = TIM_Set;
+        CCR = CCR_Set;
+        Event = Event_Set;
+        Once_Dier = Once_Dier_Set;
     }
 };
 

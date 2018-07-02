@@ -47,15 +47,18 @@ pin orange_led(GPIOD, 13);
 pin green_led(GPIOD, 12);
 
 void init_gpio() {
+    //Leds
     blue_led.mode(GPIO_MODER_MODER15_0);
     red_led.mode(GPIO_MODER_MODER14_0);
     orange_led.mode(GPIO_MODER_MODER13_0);
     green_led.mode(GPIO_MODER_MODER12_0);
-
+    
+    //Uart
     pin usart2_tx(GPIOA, 2);
     usart2_tx.mode(GPIO_MODER_MODER2_1);
     usart2_tx.alternate((0b0111 << ((2 % 8)*4)));
 
+    //Capture TIMER
     pin tim1_cap1_pin(GPIOA, 8); // PA8 TIM1_CH1
     tim1_cap1_pin.mode(GPIO_MODER_MODER8_1); //ALT
     tim1_cap1_pin.pupd(GPIO_PUPDR_PUPDR8_1); // PD
@@ -119,98 +122,28 @@ void dma_init(void) {
     dma1_ch6.enable();
 }
 
-typedef struct {
-    uint16_t angle = 0;
-    bool start_mark = false;
-    uint16_t previous = 0;
-    uint16_t current = 0;
-    uint16_t capture = 0;
-    uint32_t mark = 0;
-    const uint16_t max = 65535;
-} capture_t;
+uint16_t capture = 0;
 
-capture_t tim1_cap;
+void tim1_capture_event();
 
-timer <uint16_t> timer_1(TIM1); // Capture crankshaft position sensor
-timer <uint16_t> timer_3(TIM3);
+tim_cc_it_event<uint16_t,TIM_DIER_CC1IE,TIM_SR_CC1IF,TIM_EGR_CC1G> tim1_ch1(TIM1,&TIM1->CCR1,tim1_capture_event,false);
 
-
-timer_ch <TIM_DIER_CC1IE, TIM_SR_CC1IF, uint16_t> tim1_ch1(&timer_1, &timer_1.TIM->CCR1); //capture
-timer_ch <TIM_DIER_CC2IE, TIM_SR_CC2IF, uint16_t> tim1_ch2(&timer_1, &timer_1.TIM->CCR2); //mark
-timer_ch <TIM_DIER_CC3IE, TIM_SR_CC3IF, uint16_t> tim1_ch3(&timer_1, &timer_1.TIM->CCR3); //stop
-
-timer_ch <TIM_DIER_CC1IE, TIM_SR_CC1IF, uint16_t> tim3_ch1(&timer_3, &timer_3.TIM->CCR1);
-timer_ch <TIM_DIER_CC2IE, TIM_SR_CC2IF, uint16_t> tim3_ch2(&timer_3, &timer_3.TIM->CCR2);
-
-void capture_CPS(capture_t *cap) { 
-    if (timer_1.Status()) {
-        cap->previous = cap->current; //set prev
-        cap->current = tim1_ch1.CapComRead(); //set cur
-        cap->capture = (uint16_t) (cap->max + 1 + (cap->current - cap->previous)); //calc cap
-        cap->mark = (cap->capture * 2)+(cap->capture / 2); //calc mark
-        tim1_ch3.CapComWrite(((cap->max) + cap->current)); //set "Stop"
-        if ((cap->mark) < (cap->max)) {
-            tim1_ch2.CapComWrite((cap->mark + cap->current)); //Set "Mark"
-            tim1_ch2.ITEnable(); //Enable "Mark"
-        }
-        blue_led.reset();
-    } else {
-        tim1_ch3.CapComWrite(cap->max); //Set "Stop"
-        tim1_ch3.ITEnable(); //Enable "Stop"
-        timer_1.Enable(); //Enable Timer
-        red_led.set();
+void tim1_capture_event() {
+    capture = tim1_ch1.CCR_Read();
+    if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
+        sprintf(dma_str, "Cap %u \r\n", capture);
+        dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
+        dma1_ch6.enable();
     }
-}
-
-void mark_CPS(capture_t *cap) {
-    cap->start_mark = true;
-    blue_led.set();
-}
-
-void stop_CPS(capture_t *cap) {
-    timer_1.Disable(); //Disable Timer
-    timer_1.CNTWrite(0); //Reset Timer
-    timer_3.CNTWrite(0); //Reset Slave TIM3
-
-    cap->start_mark = false;
-    cap->previous = 0;
-    cap->current = 0;
-    cap->capture = 0;
-    cap->mark = 0;
-    
-    red_led.reset();
-    blue_led.reset();
-}
-
-void tim1_ch1_event(void) {
-    capture_CPS(&tim1_cap);
-}
-
-void tim1_ch2_event(void) {
-    mark_CPS(&tim1_cap);
-}
-
-void tim1_ch3_event(void) {
-    stop_CPS(&tim1_cap);
-}
-
-void tim3_ch1_event(void) {
-    green_led.set();
-}
-
-void tim3_ch2_event(void) {
-    green_led.reset();
+    green_led.toggle();
 }
 
 extern "C" void TIM1_CC_IRQHandler(void) {
     tim1_ch1.ITHandler();
-    tim1_ch2.ITHandler();
-    tim1_ch3.ITHandler();
 }
 
 extern "C" void TIM3_IRQHandler(void) {
-    tim3_ch1.ITHandler();
-    tim3_ch2.ITHandler();
+    
 }
 
 void init_tmr1() {
@@ -222,54 +155,43 @@ void init_tmr1() {
 
     TIM1->CCER |= TIM_CCER_CC1E; // Capture Enable
 
-    timer_1.PSCSet(168 - 1); // Prescaler
+    TIM1->PSC = (uint16_t)(168 - 1); // Prescaler
 
     TIM1->EGR = TIM_EGR_UG; // Re-initialize
 
     //Master
 
-    TIM1->CR2 |= TIM_CR2_MMS_0; // Master 001 Enable
-
-    TIM1->SMCR |= TIM_SMCR_MSM; // Fo better Sync
-
-    TIM1->SMCR &= ~TIM_SMCR_TS; // ITR0
+//    TIM1->CR2 |= TIM_CR2_MMS_0; // Master 001 Enable
+//
+//    TIM1->SMCR |= TIM_SMCR_MSM; // Fo better Sync
+//
+//    TIM1->SMCR &= ~TIM_SMCR_TS; // ITR0
 
     //
+    
+    
 
-    tim1_ch1.EventSet(tim1_ch1_event, false); //capture
-    tim1_ch2.EventSet(tim1_ch2_event, true); //mark
-    tim1_ch3.EventSet(tim1_ch3_event, true); //stop
-
-    tim1_ch1.ITEnable(); // Capture Interrupt Enable
+    TIM1->DIER |= TIM_DIER_CC1IE; // Capture Interrupt Enable
+    
+    TIM1->CR1 |= TIM_CR1_CEN; //Tim Enable (need delete)
 }
 
 void init_tmr3() {
-    NVIC_EnableIRQ(TIM3_IRQn);
-
-    timer_3.PSCSet(84 - 1); // Prescaler
-
-    TIM3->EGR = TIM_EGR_UG; // Re-initialize
-
-    //Slave
-
-    TIM3->SMCR |= TIM_SMCR_MSM; // Fo better Sync
-
-    TIM3->SMCR |= (TIM_SMCR_SMS_2 | TIM_SMCR_SMS_0); // Slave 101 Gated Mode
-
-    TIM3->SMCR &= ~TIM_SMCR_TS; // ITR0
-
-    timer_3.Enable(); //Need Enable in Slave
-
-    //
-    
-    tim3_ch1.CapComWrite(20000);
-    tim3_ch2.CapComWrite(30000);
-    
-    tim3_ch1.EventSet(tim3_ch1_event, false);
-    tim3_ch2.EventSet(tim3_ch2_event, false);
-
-    tim3_ch1.ITEnable();
-    tim3_ch2.ITEnable();
+//    NVIC_EnableIRQ(TIM3_IRQn);
+//
+//    TIM3->PSC = (uint16_t)(84 - 1); // Prescaler
+//
+//    TIM3->EGR = TIM_EGR_UG; // Re-initialize
+//
+//    //Slave
+//
+//    TIM3->SMCR |= TIM_SMCR_MSM; // Fo better Sync
+//
+//    TIM3->SMCR |= (TIM_SMCR_SMS_2 | TIM_SMCR_SMS_0); // Slave 101 Gated Mode
+//
+//    TIM3->SMCR &= ~TIM_SMCR_TS; // ITR0
+//
+//    TIM3->CR1 |= TIM_CR1_CEN; //Need Enable in Slave
 }
 
 /*
