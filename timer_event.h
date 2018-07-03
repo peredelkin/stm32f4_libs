@@ -17,7 +17,7 @@
 #include <stm32f4xx.h>
 
 template <typename bit_capacity, const uint16_t DIER_Mask, const uint16_t SR_Mask,
-const uint16_t EGR_Mask> class timer_capture_compare_interrupt_event {
+const uint16_t EGR_Mask> class TIM_CC_IT_Event {
     typedef void (*timer_event)();
 private:
     TIM_TypeDef* TIM; //Timer
@@ -83,7 +83,7 @@ public:
         }
     }
 
-    timer_capture_compare_interrupt_event(TIM_TypeDef* TIM_Set, __IO uint32_t * CCR_Set, timer_event Event_Set, bool Once_Dier_Set) {
+    TIM_CC_IT_Event(TIM_TypeDef* TIM_Set, __IO uint32_t * CCR_Set, timer_event Event_Set, bool Once_Dier_Set) {
         TIM = TIM_Set;
         CCR = CCR_Set;
         Event = Event_Set;

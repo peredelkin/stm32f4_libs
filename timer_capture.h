@@ -20,7 +20,7 @@ template <typename bit_capacity, bit_capacity capture_max,
 const uint16_t DIER_Mask, const uint16_t SR_Mask,
 const uint16_t EGR_Mask> class timer_capture {
 private:
-    timer_capture_compare_interrupt_event
+    TIM_CC_IT_Event
     <bit_capacity, DIER_Mask, SR_Mask, EGR_Mask> *timer_cap_com;
 public:
     bit_capacity previous_value = 0;
@@ -33,7 +33,7 @@ public:
         actual_value = (bit_capacity) (capture_max + 1 + present_value - previous_value);
     }
 
-    timer_capture(timer_capture_compare_interrupt_event
+    timer_capture(TIM_CC_IT_Event
             <bit_capacity, DIER_Mask, SR_Mask, EGR_Mask> *timer_cap_com_set) {
         timer_cap_com = timer_cap_com_set;
     }
