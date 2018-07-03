@@ -53,7 +53,7 @@ void init_gpio() {
     red_led.mode(GPIO_MODER_MODER14_0);
     orange_led.mode(GPIO_MODER_MODER13_0);
     green_led.mode(GPIO_MODER_MODER12_0);
-    
+
     //Uart
     pin usart2_tx(GPIOA, 2);
     usart2_tx.mode(GPIO_MODER_MODER2_1);
@@ -62,7 +62,7 @@ void init_gpio() {
     //Capture TIMER
     pin tim1_cap1_pin(GPIOA, 8); // PA8 TIM1_CH1
     tim1_cap1_pin.mode(GPIO_MODER_MODER8_1); //ALT
-    tim1_cap1_pin.pupd(GPIO_PUPDR_PUPDR8_1); // PD
+    tim1_cap1_pin.pupd(GPIO_PUPDR_PUPDR8_0); // PU
     tim1_cap1_pin.alternate((0b0001 << ((8 % 8)*4))); //AF1
 }
 
@@ -127,10 +127,21 @@ uint16_t capture = 0;
 
 void tim1_capture_event();
 
-timer_capture_compare_interrupt_event<uint16_t,TIM_DIER_CC1IE,TIM_SR_CC1IF,
-        TIM_EGR_CC1G> tim1_ch1(TIM1,&TIM1->CCR1,tim1_capture_event,false);
+timer_capture_compare_interrupt_event
+<uint16_t, TIM_DIER_CC1IE, TIM_SR_CC1IF, TIM_EGR_CC1G>
+tim1_ch1(TIM1, &TIM1->CCR1, tim1_capture_event, false);
 
-timer_capture<uint16_t,0xffff,TIM_DIER_CC1IE,TIM_SR_CC1IF,TIM_EGR_CC1G> tim1_capture(&tim1_ch1);
+timer_capture<uint16_t, 0xffff, TIM_DIER_CC1IE, TIM_SR_CC1IF, TIM_EGR_CC1G>
+tim1_capture(&tim1_ch1);
+
+template <typename bit_capacity, bit_capacity capture_max,
+const uint16_t DIER_Mask, const uint16_t SR_Mask,
+const uint16_t EGR_Mask> class vr_handler {
+private:
+    timer_capture<bit_capacity, capture_max, DIER_Mask, SR_Mask, EGR_Mask>
+    *vr_capture;
+public:
+};
 
 void tim1_capture_event() {
     tim1_capture.Handler();
@@ -147,7 +158,7 @@ extern "C" void TIM1_CC_IRQHandler(void) {
 }
 
 extern "C" void TIM3_IRQHandler(void) {
-    
+
 }
 
 void init_tmr1() {
@@ -159,43 +170,41 @@ void init_tmr1() {
 
     TIM1->CCER |= TIM_CCER_CC1E; // Capture Enable
 
-    TIM1->PSC = (uint16_t)(168 - 1); // Prescaler
+    TIM1->PSC = (uint16_t) (168 - 1); // Prescaler
 
     TIM1->EGR = TIM_EGR_UG; // Re-initialize
 
     //Master
 
-//    TIM1->CR2 |= TIM_CR2_MMS_0; // Master 001 Enable
-//
-//    TIM1->SMCR |= TIM_SMCR_MSM; // Fo better Sync
-//
-//    TIM1->SMCR &= ~TIM_SMCR_TS; // ITR0
+    //    TIM1->CR2 |= TIM_CR2_MMS_0; // Master 001 Enable
+    //
+    //    TIM1->SMCR |= TIM_SMCR_MSM; // Fo better Sync
+    //
+    //    TIM1->SMCR &= ~TIM_SMCR_TS; // ITR0
 
     //
-    
-    
+
+    TIM1->CR1 |= TIM_CR1_CEN; //Tim Enable (need delete)
 
     tim1_ch1.Interrupt_Enable();
-    
-    TIM1->CR1 |= TIM_CR1_CEN; //Tim Enable (need delete)
 }
 
 void init_tmr3() {
-//    NVIC_EnableIRQ(TIM3_IRQn);
-//
-//    TIM3->PSC = (uint16_t)(84 - 1); // Prescaler
-//
-//    TIM3->EGR = TIM_EGR_UG; // Re-initialize
-//
-//    //Slave
-//
-//    TIM3->SMCR |= TIM_SMCR_MSM; // Fo better Sync
-//
-//    TIM3->SMCR |= (TIM_SMCR_SMS_2 | TIM_SMCR_SMS_0); // Slave 101 Gated Mode
-//
-//    TIM3->SMCR &= ~TIM_SMCR_TS; // ITR0
-//
-//    TIM3->CR1 |= TIM_CR1_CEN; //Need Enable in Slave
+    //    NVIC_EnableIRQ(TIM3_IRQn);
+    //
+    //    TIM3->PSC = (uint16_t)(84 - 1); // Prescaler
+    //
+    //    TIM3->EGR = TIM_EGR_UG; // Re-initialize
+    //
+    //    //Slave
+    //
+    //    TIM3->SMCR |= TIM_SMCR_MSM; // Fo better Sync
+    //
+    //    TIM3->SMCR |= (TIM_SMCR_SMS_2 | TIM_SMCR_SMS_0); // Slave 101 Gated Mode
+    //
+    //    TIM3->SMCR &= ~TIM_SMCR_TS; // ITR0
+    //
+    //    TIM3->CR1 |= TIM_CR1_CEN; //Need Enable in Slave
 }
 
 /*
