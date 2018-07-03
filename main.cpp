@@ -141,6 +141,11 @@ private:
     timer_capture<bit_capacity, capture_max, DIER_Mask, SR_Mask, EGR_Mask>
     *vr_capture;
 public:
+    vr_handler (timer_capture
+            <bit_capacity, capture_max, DIER_Mask, SR_Mask, EGR_Mask>
+    *vr_capture_set) {
+        vr_capture = vr_capture_set;
+    }
 };
 
 void tim1_capture_event() {
