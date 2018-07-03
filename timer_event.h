@@ -56,11 +56,11 @@ public:
     //CCR
 
     bit_capacity Capture_Compare_Read() {
-        return *CCR;
+        return (bit_capacity)*CCR;
     }
 
     void Capture_Compare_Write(bit_capacity data) {
-        *CCR = data;
+        *CCR = (bit_capacity) data;
     }
     //Event
 
