@@ -60,6 +60,7 @@ extern int main();
 // Реализация обработчика по-умолчанию.
 
 STARTUP_FUNC_ATTR static void __Default_Handler(void) {
+    while(1);
 }
 
 // Реализация обработчика сброса.
@@ -190,7 +191,7 @@ void CRYP_IRQHandler(void) HANDLER_ATTR; /* CRYP crypto                  */
 void HASH_RNG_IRQHandler(void) HANDLER_ATTR; /* Hash and Rng                 */
 void FPU_IRQHandler(void) HANDLER_ATTR; /* FPU                          */
 
-__attribute__((section(".isr_vector"))) static void* g_pfnVectors [ISR_COUNT] = {
+__attribute__((section(".isr_vector"),used)) static void* g_pfnVectors [ISR_COUNT] = {
     // Указатель стека.
     (void*) &_estack, //1
     // Обработчики прерываний ядра.

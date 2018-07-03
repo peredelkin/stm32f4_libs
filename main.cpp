@@ -17,6 +17,7 @@
 #include <dma.h>
 #include <stdio.h>
 #include <timer_event.h>
+#include <timer_capture.h>
 
 static void delay_1s(void) {
     int counter = 1000;
@@ -126,12 +127,15 @@ uint16_t capture = 0;
 
 void tim1_capture_event();
 
-tim_cc_it_event<uint16_t,TIM_DIER_CC1IE,TIM_SR_CC1IF,TIM_EGR_CC1G> tim1_ch1(TIM1,&TIM1->CCR1,tim1_capture_event,false);
+timer_capture_compare_interrupt_event<uint16_t,TIM_DIER_CC1IE,TIM_SR_CC1IF,
+        TIM_EGR_CC1G> tim1_ch1(TIM1,&TIM1->CCR1,tim1_capture_event,false);
+
+timer_capture<uint16_t,0xffff,TIM_DIER_CC1IE,TIM_SR_CC1IF,TIM_EGR_CC1G> tim1_capture(&tim1_ch1);
 
 void tim1_capture_event() {
-    capture = tim1_ch1.CCR_Read();
+    tim1_capture.Handler();
     if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
-        sprintf(dma_str, "Cap %u \r\n", capture);
+        sprintf(dma_str, "Cap %u \r\n", tim1_capture.actual_value);
         dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
         dma1_ch6.enable();
     }
@@ -139,7 +143,7 @@ void tim1_capture_event() {
 }
 
 extern "C" void TIM1_CC_IRQHandler(void) {
-    tim1_ch1.ITHandler();
+    tim1_ch1.Interrupt_Handler();
 }
 
 extern "C" void TIM3_IRQHandler(void) {
@@ -171,7 +175,7 @@ void init_tmr1() {
     
     
 
-    TIM1->DIER |= TIM_DIER_CC1IE; // Capture Interrupt Enable
+    tim1_ch1.Interrupt_Enable();
     
     TIM1->CR1 |= TIM_CR1_CEN; //Tim Enable (need delete)
 }

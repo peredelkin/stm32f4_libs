@@ -17,48 +17,49 @@
 #include <stm32f4xx.h>
 
 template <typename bit_capacity, const uint16_t DIER_Mask, const uint16_t SR_Mask,
-const uint16_t EGR_Mask> class tim_cc_it_event {
+const uint16_t EGR_Mask> class timer_capture_compare_interrupt_event {
     typedef void (*timer_event)();
 private:
     TIM_TypeDef* TIM; //Timer
     __IO uint32_t* CCR; //capture/compare register
     timer_event Event = NULL; //Calling Event
-    bool Once_Dier = false; //Reset DIER if True
 public:
+    bool Execute_Once = false; //Reset DIER if True
     //DIER
 
-    uint16_t DIER_Read() {
+    uint16_t Interrupt_Status() {
         return (TIM->DIER & DIER_Mask);
     }
 
-    void DIER_Set() {
+    void Interrupt_Enable() {
+        TIM->SR &= ~SR_Mask; //Reset Before Enable
         TIM->DIER |= DIER_Mask;
     }
 
-    void DIER_Reset() {
+    void Interrupt_Disable() {
         TIM->DIER &= ~DIER_Mask;
     }
     //SR
 
-    uint16_t SR_Read() {
+    uint16_t Status_Read() {
         return (TIM->SR & SR_Mask);
     }
 
-    void SR_Reset() {
+    void Status_Reset() {
         TIM->SR &= ~SR_Mask;
     }
     //EGR
 
-    void EGR_Set() {
+    void Event_Generate() {
         TIM->EGR = EGR_Mask;
     }
     //CCR
 
-    bit_capacity CCR_Read() {
+    bit_capacity Capture_Compare_Read() {
         return *CCR;
     }
 
-    void CCR_Write(bit_capacity data) {
+    void Capture_Compare_Write(bit_capacity data) {
         *CCR = data;
     }
     //Event
@@ -68,25 +69,25 @@ public:
     }
     //Handler
 
-    void ITHandler() {
-        if (TIM->DIER & DIER_Mask) { //Check IT Enabled
-            if (TIM->SR & SR_Mask) { //Check Status
-                TIM->SR &= ~SR_Mask; //Reset Status
-                if (Event) { //Check Event
-                    Event(); //Call Event
+    void Interrupt_Handler() {
+        if (Interrupt_Status()) {
+            if (Status_Read()) {
+                Status_Reset();
+                if (Event) {
+                    Event();
                 }
-                if (Once_Dier) { //Check Once Call Interrupt
-                    TIM->DIER &= ~DIER_Mask; //Reset Interrupt
+                if (Execute_Once) {
+                    Interrupt_Disable();
                 }
             }
         }
     }
 
-    tim_cc_it_event(TIM_TypeDef* TIM_Set, __IO uint32_t * CCR_Set, timer_event Event_Set, bool Once_Dier_Set) {
+    timer_capture_compare_interrupt_event(TIM_TypeDef* TIM_Set, __IO uint32_t * CCR_Set, timer_event Event_Set, bool Once_Dier_Set) {
         TIM = TIM_Set;
         CCR = CCR_Set;
         Event = Event_Set;
-        Once_Dier = Once_Dier_Set;
+        Execute_Once = Once_Dier_Set;
     }
 };
 
