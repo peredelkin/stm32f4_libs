@@ -14,80 +14,66 @@
 #ifndef TIMER_EVENT_H
 #define TIMER_EVENT_H
 
-#include <stm32f4xx.h>
-
-template <typename bit_capacity, const uint16_t DIER_Mask, const uint16_t SR_Mask,
-const uint16_t EGR_Mask> class timer_capture_compare_interrupt_event {
-    typedef void (*timer_event)();
+class timer_16 {
 private:
-    TIM_TypeDef* TIM; //Timer
-    __IO uint32_t* CCR; //capture/compare register
-    timer_event Event = NULL; //Calling Event
+    TIM_TypeDef* TIM;
 public:
-    bool Execute_Once = false; //Reset DIER if True
-    //DIER
 
-    uint16_t Interrupt_Status() {
-        return (TIM->DIER & DIER_Mask);
+    uint16_t CCR1_Read() {
+        return TIM->CCR1;
     }
 
-    void Interrupt_Enable() {
-        TIM->SR &= ~SR_Mask; //Reset Before Enable
-        TIM->DIER |= DIER_Mask;
+    void CCR1_Write(uint16_t ccr_data) {
+        TIM->CCR1 = ccr_data;
     }
 
-    void Interrupt_Disable() {
-        TIM->DIER &= ~DIER_Mask;
-    }
-    //SR
-
-    uint16_t Status_Read() {
-        return (TIM->SR & SR_Mask);
+    uint16_t CCR2_Read() {
+        return TIM->CCR2;
     }
 
-    void Status_Reset() {
-        TIM->SR &= ~SR_Mask;
-    }
-    //EGR
-
-    void Event_Generate() {
-        TIM->EGR = EGR_Mask;
-    }
-    //CCR
-
-    bit_capacity Capture_Compare_Read() {
-        return (bit_capacity)*CCR;
+    void CCR2_Write(uint16_t ccr_data) {
+        TIM->CCR2 = ccr_data;
     }
 
-    void Capture_Compare_Write(bit_capacity data) {
-        *CCR = (bit_capacity) data;
-    }
-    //Event
-
-    void Event_Set(timer_event EVENT_Set) {
-        Event = EVENT_Set;
-    }
-    //Handler
-
-    void Interrupt_Handler() {
-        if (Interrupt_Status()) {
-            if (Status_Read()) {
-                Status_Reset();
-                if (Event) {
-                    Event();
-                }
-                if (Execute_Once) {
-                    Interrupt_Disable();
-                }
-            }
-        }
+    uint16_t CCR3_Read() {
+        return TIM->CCR3;
     }
 
-    timer_capture_compare_interrupt_event(TIM_TypeDef* TIM_Set, __IO uint32_t * CCR_Set, timer_event Event_Set, bool Once_Dier_Set) {
+    void CCR3_Write(uint16_t ccr_data) {
+        TIM->CCR3 = ccr_data;
+    }
+
+    uint16_t CCR4_Read() {
+        return TIM->CCR4;
+    }
+
+    void CCR4_Write(uint16_t ccr_data) {
+        TIM->CCR4 = ccr_data;
+    }
+
+    timer_16(TIM_TypeDef* TIM_Set) {
         TIM = TIM_Set;
-        CCR = CCR_Set;
-        Event = Event_Set;
-        Execute_Once = Once_Dier_Set;
+    }
+};
+
+class timer_16_channel_event {
+private:
+
+    timer_16 *tim;
+    uint16_t(timer_16::*CCR_Read_Method)();
+    void (timer_16::*CCR_Write_Method)(uint16_t ccr_data);
+public:
+
+    uint16_t Cap_Com_Read() {
+        return (tim->*CCR_Read_Method)();
+    }
+
+    void Cap_Com_Write(uint16_t ccr_data) {
+        (tim->*CCR_Write_Method)(ccr_data);
+    }
+
+    timer_16_channel_event(timer_16 *tim_set) {
+        tim = tim_set;
     }
 };
 
