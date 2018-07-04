@@ -14,80 +14,25 @@
 #ifndef TIMER_EVENT_H
 #define TIMER_EVENT_H
 
-#include <stm32f4xx.h>
-
-template <typename bit_capacity, const uint16_t DIER_Mask, const uint16_t SR_Mask,
-const uint16_t EGR_Mask> class TIM_CC_IT_Event {
-    typedef void (*timer_event)();
+template <typename bit_capacity> class  timer {
 private:
-    TIM_TypeDef* TIM; //Timer
-    __IO uint32_t* CCR; //capture/compare register
-    timer_event Event = NULL; //Calling Event
+    TIM_TypeDef *TIM;
 public:
-    bool Execute_Once = false; //Reset DIER if True
-    //DIER
+    
+};
 
-    uint16_t Interrupt_Status() {
-        return (TIM->DIER & DIER_Mask);
-    }
-
-    void Interrupt_Enable() {
-        TIM->SR &= ~SR_Mask; //Reset Before Enable
-        TIM->DIER |= DIER_Mask;
-    }
-
-    void Interrupt_Disable() {
-        TIM->DIER &= ~DIER_Mask;
-    }
-    //SR
-
-    uint16_t Status_Read() {
-        return (TIM->SR & SR_Mask);
-    }
-
-    void Status_Reset() {
-        TIM->SR &= ~SR_Mask;
-    }
-    //EGR
-
-    void Event_Generate() {
-        TIM->EGR = EGR_Mask;
-    }
-    //CCR
-
-    bit_capacity Capture_Compare_Read() {
-        return (bit_capacity)*CCR;
-    }
-
-    void Capture_Compare_Write(bit_capacity data) {
-        *CCR = (bit_capacity) data;
-    }
-    //Event
-
-    void Event_Set(timer_event EVENT_Set) {
-        Event = EVENT_Set;
-    }
-    //Handler
-
-    void Interrupt_Handler() {
-        if (Interrupt_Status()) {
-            if (Status_Read()) {
-                Status_Reset();
-                if (Event) {
-                    Event();
-                }
-                if (Execute_Once) {
-                    Interrupt_Disable();
-                }
-            }
-        }
-    }
-
-    TIM_CC_IT_Event(TIM_TypeDef* TIM_Set, __IO uint32_t * CCR_Set, timer_event Event_Set, bool Once_Dier_Set) {
-        TIM = TIM_Set;
-        CCR = CCR_Set;
-        Event = Event_Set;
-        Execute_Once = Once_Dier_Set;
+template <typename bit_capacity> class timer_event {
+private:
+    uint16_t dma_interrupt_mask;
+    uint16_t status_mask;
+    bool once = true;
+    timer <bit_capacity> *tim;
+    __IO uint32_t *ccr;
+public:
+    timer_event(timer <bit_capacity> *tim_set,__IO uint32_t *ccr_set,
+            uint16_t dma_interrupt_mask_set,uint16_t status_mask_set,
+            bool once_set) {
+        
     }
 };
 
