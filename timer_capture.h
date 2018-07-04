@@ -14,7 +14,5 @@
 #ifndef TIMER_CAPTURE_H
 #define TIMER_CAPTURE_H
 
-
-
 #endif /* TIMER_CAPTURE_H */
 
