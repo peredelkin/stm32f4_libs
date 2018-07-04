@@ -16,6 +16,7 @@
 #include <usart.h>
 #include <dma.h>
 #include <stdio.h>
+#include <timer.h>
 #include <timer_event.h>
 #include <timer_capture.h>
 
