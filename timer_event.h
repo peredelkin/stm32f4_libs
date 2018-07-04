@@ -57,18 +57,26 @@ private:
     ccr_write ccr_write_method;
 public:
 
-    uint16_t Cap_Com_Read() {
+    uint16_t CapCom_Read() {
         return (tim->*ccr_read_method)();
     }
 
-    void Cap_Com_Write(uint16_t ccr_data) {
+    void CapCom_Write(uint16_t ccr_data) {
         (tim->*ccr_write_method)(ccr_data);
     }
 
-    void Event_Enable(bool once_set) {
-        once = once_set;
+    void Event_Enable() {
         tim->SR_Reset(status_mask);
         tim->DIER_Set(interrupt_mask);
+    }
+    
+    void Event_Disable() {
+        tim->DIER_Reset(interrupt_mask);
+    }
+    
+    void Event_Set(timer_event event_set,bool once_set) {
+        event = event_set;
+        once = once_set;
     }
 
     timer_16_channel_event(
