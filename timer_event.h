@@ -44,22 +44,25 @@ public:
 };
 
 class timer_16_channel_event {
+    typedef void (*timer_event)();
+    typedef uint16_t(timer_16::*ccr_read)();
+    typedef void (timer_16::*ccr_write)(uint16_t ccr_data);
 private:
     bool once;
     uint16_t interrupt_mask;
     uint16_t status_mask;
     timer_16 *tim;
-    void (*timer_event)();
+    timer_event event;
+    ccr_read ccr_read_method;
+    ccr_write ccr_write_method;
 public:
-    uint16_t(timer_16::*CCR_Read_Method)();
-    void (timer_16::*CCR_Write_Method)(uint16_t ccr_data);
 
     uint16_t Cap_Com_Read() {
-        return (tim->*CCR_Read_Method)();
+        return (tim->*ccr_read_method)();
     }
 
     void Cap_Com_Write(uint16_t ccr_data) {
-        (tim->*CCR_Write_Method)(ccr_data);
+        (tim->*ccr_write_method)(ccr_data);
     }
 
     void Event_Enable(bool once_set) {
@@ -68,12 +71,22 @@ public:
         tim->DIER_Set(interrupt_mask);
     }
 
-    timer_16_channel_event(timer_16 *tim_set,
-            uint16_t interrupt_mask_set,
-            uint16_t status_mask_set) {
+    timer_16_channel_event(
+    timer_event event_set,
+    bool once_set,
+    timer_16 *tim_set,
+    uint16_t interrupt_mask_set,
+    uint16_t status_mask_set,
+    ccr_read ccr_read_method_set,
+    ccr_write ccr_wrie_method_set
+    ) {
+        once = once_set;
         interrupt_mask = interrupt_mask_set;
         status_mask = status_mask_set;
         tim = tim_set;
+        event = event_set;
+        ccr_read_method = ccr_read_method_set;
+        ccr_write_method = ccr_wrie_method_set;
     }
 };
 
