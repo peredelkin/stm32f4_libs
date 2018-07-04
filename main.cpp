@@ -136,15 +136,15 @@ timer_16_channel_event tim1_ch1(&tim1_ch1_capture, false,
 timer_16_channel_event tim1_ch2(&tim1_ch2_compare, true,
         &tim1,
         TIM_DIER_CC2IE, TIM_SR_CC2IF,
-        &timer_16::CCR1_Read, &timer_16::CCR1_Write);
+        &timer_16::CCR2_Read, &timer_16::CCR2_Write);
 timer_16_channel_event tim1_ch3(&tim1_ch3_compare, true,
         &tim1,
         TIM_DIER_CC3IE, TIM_SR_CC3IF,
-        &timer_16::CCR1_Read, &timer_16::CCR1_Write);
+        &timer_16::CCR3_Read, &timer_16::CCR3_Write);
 timer_16_channel_event tim1_ch4(&tim1_ch4_compare, true,
         &tim1,
         TIM_DIER_CC4IE, TIM_SR_CC4IF,
-        &timer_16::CCR1_Read, &timer_16::CCR1_Write);
+        &timer_16::CCR4_Read, &timer_16::CCR4_Write);
 
 extern "C" void TIM1_CC_IRQHandler(void) {
     tim1_ch1.IT_Handler();
