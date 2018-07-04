@@ -123,43 +123,11 @@ void dma_init(void) {
     dma1_ch6.enable();
 }
 
-uint16_t capture = 0;
-
-void tim1_capture_event();
-
-timer_capture_compare_interrupt_event
-<uint16_t, TIM_DIER_CC1IE, TIM_SR_CC1IF, TIM_EGR_CC1G>
-tim1_ch1(TIM1, &TIM1->CCR1, tim1_capture_event, false);
-
-timer_capture<uint16_t, 0xffff, TIM_DIER_CC1IE, TIM_SR_CC1IF, TIM_EGR_CC1G>
-tim1_capture(&tim1_ch1);
-
-template <typename bit_capacity, bit_capacity capture_max,
-const uint16_t DIER_Mask, const uint16_t SR_Mask,
-const uint16_t EGR_Mask> class vr_handler {
-private:
-    timer_capture<bit_capacity, capture_max, DIER_Mask, SR_Mask, EGR_Mask>
-    *vr_capture;
-public:
-    vr_handler (timer_capture
-            <bit_capacity, capture_max, DIER_Mask, SR_Mask, EGR_Mask>
-    *vr_capture_set) {
-        vr_capture = vr_capture_set;
-    }
-};
-
-void tim1_capture_event() {
-    tim1_capture.Handler();
-    if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
-        sprintf(dma_str, "Cap %u \r\n", tim1_capture.actual_value);
-        dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
-        dma1_ch6.enable();
-    }
-    green_led.toggle();
-}
+timer_16 tim1(TIM1);
+timer_16_channel_event tim1_ch1(&tim1);
 
 extern "C" void TIM1_CC_IRQHandler(void) {
-    tim1_ch1.Interrupt_Handler();
+    
 }
 
 extern "C" void TIM3_IRQHandler(void) {
@@ -191,7 +159,7 @@ void init_tmr1() {
 
     TIM1->CR1 |= TIM_CR1_CEN; //Tim Enable (need delete)
 
-    tim1_ch1.Interrupt_Enable();
+    //Interrupt Enable
 }
 
 void init_tmr3() {
