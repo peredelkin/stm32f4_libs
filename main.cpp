@@ -123,15 +123,62 @@ void dma_init(void) {
     dma1_ch6.enable();
 }
 
+void tim1_ch1_capture(void);
+void tim1_ch2_compare(void);
+void tim1_ch3_compare(void);
+void tim1_ch4_compare(void);
+
 timer_16 tim1(TIM1);
-timer_16_channel_event tim1_ch1(&tim1);
+timer_16_channel_event tim1_ch1(&tim1_ch1_capture, false,
+        &tim1,
+        TIM_DIER_CC1IE, TIM_SR_CC1IF,
+        &timer_16::CCR1_Read, &timer_16::CCR1_Write);
+timer_16_channel_event tim1_ch2(&tim1_ch2_compare, true,
+        &tim1,
+        TIM_DIER_CC2IE, TIM_SR_CC2IF,
+        &timer_16::CCR1_Read, &timer_16::CCR1_Write);
+timer_16_channel_event tim1_ch3(&tim1_ch3_compare, true,
+        &tim1,
+        TIM_DIER_CC3IE, TIM_SR_CC3IF,
+        &timer_16::CCR1_Read, &timer_16::CCR1_Write);
+timer_16_channel_event tim1_ch4(&tim1_ch4_compare, true,
+        &tim1,
+        TIM_DIER_CC4IE, TIM_SR_CC4IF,
+        &timer_16::CCR1_Read, &timer_16::CCR1_Write);
 
 extern "C" void TIM1_CC_IRQHandler(void) {
-    
+    tim1_ch1.IT_Handler();
+    tim1_ch2.IT_Handler();
+    tim1_ch3.IT_Handler();
+    tim1_ch4.IT_Handler();
 }
 
 extern "C" void TIM3_IRQHandler(void) {
 
+}
+
+uint16_t capture = 0;
+
+void tim1_ch1_capture() {
+    capture = tim1_ch1.CapCom_Read();
+    if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
+        sprintf(dma_str, "Cap %u \r\n", capture);
+        dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
+        dma1_ch6.enable();
+    }
+    green_led.toggle();
+}
+
+void tim1_ch2_compare(void) {
+    
+}
+
+void tim1_ch3_compare(void) {
+    
+}
+
+void tim1_ch4_compare(void) {
+    
 }
 
 void init_tmr1() {
@@ -159,7 +206,7 @@ void init_tmr1() {
 
     TIM1->CR1 |= TIM_CR1_CEN; //Tim Enable (need delete)
 
-    //Interrupt Enable
+    tim1_ch1.IT_Enable(); //Interrupt Enable
 }
 
 void init_tmr3() {
