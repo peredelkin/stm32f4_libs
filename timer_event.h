@@ -55,6 +55,13 @@ private:
     timer_event event;
     ccr_read ccr_read_method;
     ccr_write ccr_write_method;
+
+    void _Event_Handler() {
+        if (event) event();
+        if (once) {
+            IT_Disable();
+        }
+    }
 public:
 
     uint16_t CapCom_Read() {
@@ -65,29 +72,38 @@ public:
         (tim->*ccr_write_method)(ccr_data);
     }
 
-    void Event_Enable() {
+    void IT_Enable() {
         tim->SR_Reset(status_mask);
         tim->DIER_Set(interrupt_mask);
     }
-    
-    void Event_Disable() {
+
+    void IT_Disable() {
         tim->DIER_Reset(interrupt_mask);
     }
-    
-    void Event_Set(timer_event event_set,bool once_set) {
+
+    void IT_Handler() {
+        if (tim->DIER_Read(interrupt_mask)) {
+            if (tim->SR_Read(status_mask)) {
+                tim->SR_Reset(status_mask);
+                _Event_Handler();
+            }
+        }
+    }
+
+    void Event_Set(timer_event event_set, bool once_set) {
         event = event_set;
         once = once_set;
     }
 
     timer_16_channel_event(
-    timer_event event_set,
-    bool once_set,
-    timer_16 *tim_set,
-    uint16_t interrupt_mask_set,
-    uint16_t status_mask_set,
-    ccr_read ccr_read_method_set,
-    ccr_write ccr_wrie_method_set
-    ) {
+            timer_event event_set,
+            bool once_set,
+            timer_16 *tim_set,
+            uint16_t interrupt_mask_set,
+            uint16_t status_mask_set,
+            ccr_read ccr_read_method_set,
+            ccr_write ccr_wrie_method_set
+            ) {
         once = once_set;
         interrupt_mask = interrupt_mask_set;
         status_mask = status_mask_set;
