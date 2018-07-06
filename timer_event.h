@@ -30,10 +30,10 @@ private:
     ccr_write ccr_write_method;
 
     void _Event_Handler() {
-        if (event) event();
         if (once) {
             IT_Disable();
         }
+        if (event) event();
     }
 public:
 
