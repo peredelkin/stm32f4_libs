@@ -20,6 +20,9 @@ class timer_16 {
 private:
     TIM_TypeDef* TIM;
 public:
+    uint16_t CR1_Read(uint16_t mask);
+    void CR1_Set(uint16_t mask);
+    void CR1_Reset(uint16_t mask);
 
     uint16_t DIER_Read(uint16_t mask);
     void DIER_Set(uint16_t mask);

@@ -55,9 +55,9 @@ public:
     }
 
     void IT_Handler() {
-        if (tim->DIER_Read(interrupt_mask)) {
-            if (tim->SR_Read(status_mask)) {
-                tim->SR_Reset(status_mask);
+        if (tim->SR_Read(status_mask)) {
+            tim->SR_Reset(status_mask);
+            if (tim->DIER_Read(interrupt_mask)) {
                 _Event_Handler();
             }
         }

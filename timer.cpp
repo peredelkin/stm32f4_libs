@@ -6,6 +6,18 @@
 
 #include "timer.h"
 
+uint16_t timer_16::CR1_Read(uint16_t mask) {
+    return (TIM->CR1 & mask);
+}
+
+void timer_16::CR1_Set(uint16_t mask) {
+    TIM->CR1 |= mask;
+}
+
+void timer_16::CR1_Reset(uint16_t mask) {
+    TIM->CR1 &= ~mask;
+}
+
 uint16_t timer_16::DIER_Read(uint16_t mask) {
     return (TIM->DIER & mask);
 }
