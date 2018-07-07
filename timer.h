@@ -23,6 +23,10 @@ public:
     uint16_t CR1_Read(uint16_t mask);
     void CR1_Set(uint16_t mask);
     void CR1_Reset(uint16_t mask);
+    
+    uint16_t State();
+    void Enable();
+    void Disable();
 
     uint16_t DIER_Read(uint16_t mask);
     void DIER_Set(uint16_t mask);
@@ -30,6 +34,8 @@ public:
 
     uint16_t SR_Read(uint16_t mask);
     void SR_Reset(uint16_t mask);
+    
+    uint16_t CNT_Read();
 
     uint16_t CCR1_Read();
     void CCR1_Write(uint16_t ccr_data);

@@ -18,6 +18,18 @@ void timer_16::CR1_Reset(uint16_t mask) {
     TIM->CR1 &= ~mask;
 }
 
+uint16_t timer_16::State() {
+    return (TIM->CR1 & TIM_CR1_CEN);
+}
+
+void timer_16::Enable() {
+    TIM->CR1 |= TIM_CR1_CEN;
+}
+
+void timer_16::Disable() {
+    TIM->CR1 &= ~TIM_CR1_CEN;
+}
+
 uint16_t timer_16::DIER_Read(uint16_t mask) {
     return (TIM->DIER & mask);
 }
@@ -36,6 +48,10 @@ uint16_t timer_16::SR_Read(uint16_t mask) {
 
 void timer_16::SR_Reset(uint16_t mask) {
     TIM->SR &= ~mask;
+}
+
+uint16_t timer_16::CNT_Read() {
+    return TIM->CNT;
 }
 
 uint16_t timer_16::CCR1_Read() {

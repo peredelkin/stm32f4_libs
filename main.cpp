@@ -171,7 +171,7 @@ uint8_t tooth = 0;
 void vr_handler(void) {
     if (mark) {
         if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
-            sprintf(dma_str, "Tooth %u,Cap %u\r\n", tooth, actual_capture);
+            sprintf(dma_str, "Cap %u,Tooth %u\r\n",actual_capture,tooth);
             dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
             dma1_ch6.enable();
         }
@@ -190,9 +190,9 @@ void vr_handler(void) {
                 tooth++;
             }
             break;
-            case 59:
+            case 60:
             {
-                tooth = 0;
+                TIM1->EGR = TIM_EGR_CC4G; //Call Stop if Mark Missed
             }
             break;
             default:
@@ -208,9 +208,9 @@ void tim1_ch1_capture(void) {
     previous_capture = current_capture; //Set Previous from Current
     current_capture = tim1_ch1.CapCom_Read(); //Set Current
     actual_capture = current_capture - previous_capture; //Calc Actual
-    mark_compare = (uint32_t)((actual_capture*2)+(actual_capture/2));
+    mark_compare = (uint32_t)((actual_capture*2)+(actual_capture/2)); //Calc MARK
     tim1_ch4.CapCom_Write(0xffff + current_capture); //Set Stop
-    if (tim1.CR1_Read(TIM_CR1_CEN)) {
+    if (tim1.State()) {
         if(mark_compare < 0xffff) {
             tim1_ch3.CapCom_Write((uint16_t)(mark_compare + current_capture)); //Set Mark
             tim1_ch3.IT_Enable(); //Enable Mark
@@ -218,14 +218,14 @@ void tim1_ch1_capture(void) {
         vr_handler();
         green_led.reset(); //mark led
     } else {
-        tim1.CR1_Set(TIM_CR1_CEN); //Enable Timer
+        tim1.Enable(); //Enable Timer
         tim1_ch4.IT_Enable(); //Enable STOP
         red_led.reset(); //stop led
     }
 }
 
 void tim1_ch2_58_59_compare(void) {
-    current_capture = (uint16_t)(TIM1->CNT);
+    current_capture = tim1.CNT_Read(); //Read Current CNT
     vr_handler();
     blue_led.toggle(); //58 59 led
 }
@@ -237,7 +237,7 @@ void tim1_ch3_mark_compare(void) {
 }
 
 void tim1_ch4_stop_compare(void) {
-    tim1.CR1_Reset(TIM_CR1_CEN);
+    tim1.Disable(); //Disable Timer
     
     previous_capture = 0;
     current_capture = 0;
