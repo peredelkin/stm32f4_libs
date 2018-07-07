@@ -54,6 +54,10 @@ uint16_t timer_16::CNT_Read() {
     return TIM->CNT;
 }
 
+void timer_16::CNT_Write(uint16_t data) {
+    TIM->CNT = data;
+}
+
 uint16_t timer_16::CCR1_Read() {
     return TIM->CCR1;
 }

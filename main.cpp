@@ -157,8 +157,27 @@ extern "C" void TIM1_CC_IRQHandler(void) {
     tim1_ch4.IT_Handler();
 }
 
-extern "C" void TIM3_IRQHandler(void) {
+void orange_led_on() {
+    orange_led.set();
+}
+void orange_led_off() {
+    orange_led.reset();
+}
 
+timer_16 tim3(TIM3);
+timer_16_channel_event tim3_ch1(&orange_led_on, true,
+        &tim3,
+        TIM_DIER_CC1IE, TIM_SR_CC1IF,
+        &timer_16::CCR1_Read, &timer_16::CCR1_Write);
+
+timer_16_channel_event tim3_ch2(&orange_led_off, true,
+        &tim3,
+        TIM_DIER_CC2IE, TIM_SR_CC2IF,
+        &timer_16::CCR2_Read, &timer_16::CCR2_Write);
+
+extern "C" void TIM3_IRQHandler(void) {
+    tim3_ch1.IT_Handler();
+    tim3_ch2.IT_Handler();
 }
 
 uint16_t previous_capture = 0;
@@ -168,8 +187,20 @@ uint32_t mark_compare = 0;
 bool mark = false;
 uint8_t tooth = 0;
 
+void coil_handler(void) {
+    if(tooth==18) {
+        tim3_ch1.CapCom_Write(actual_capture+current_capture);
+        tim3_ch1.IT_Enable();
+    }
+    if(tooth==19) {
+        tim3_ch2.CapCom_Write(actual_capture+current_capture);
+        tim3_ch2.IT_Enable();
+    }
+}
+
 void vr_handler(void) {
     if (mark) {
+        coil_handler();
         if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
             sprintf(dma_str, "Cap %u,Tooth %u\r\n",actual_capture,tooth);
             dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
@@ -238,6 +269,8 @@ void tim1_ch3_mark_compare(void) {
 
 void tim1_ch4_stop_compare(void) {
     tim1.Disable(); //Disable Timer
+    tim1.CNT_Write(0); //Reset Timer
+    tim3.CNT_Write(0); //Reset Slave Timer
     
     previous_capture = 0;
     current_capture = 0;
@@ -264,35 +297,36 @@ void init_tmr1() {
 
     TIM1->EGR = TIM_EGR_UG; // Re-initialize
 
-    //Master
+    //=================Master========================
 
-    //    TIM1->CR2 |= TIM_CR2_MMS_0; // Master 001 Enable
-    //
-    //    TIM1->SMCR |= TIM_SMCR_MSM; // Fo better Sync
-    //
-    //    TIM1->SMCR &= ~TIM_SMCR_TS; // ITR0
+    TIM1->CR2 |= TIM_CR2_MMS_0; // Master 001 Enable
 
-    //
+    TIM1->SMCR |= TIM_SMCR_MSM; // Fo better Sync
+
+    TIM1->SMCR &= ~TIM_SMCR_TS; // ITR0
+
+    //=================Master End=====================
 
     tim1_ch1.IT_Enable(); //Interrupt Enable
 }
 
 void init_tmr3() {
-    //    NVIC_EnableIRQ(TIM3_IRQn);
-    //
-    //    TIM3->PSC = (uint16_t)(84 - 1); // Prescaler
-    //
-    //    TIM3->EGR = TIM_EGR_UG; // Re-initialize
-    //
-    //    //Slave
-    //
-    //    TIM3->SMCR |= TIM_SMCR_MSM; // Fo better Sync
-    //
-    //    TIM3->SMCR |= (TIM_SMCR_SMS_2 | TIM_SMCR_SMS_0); // Slave 101 Gated Mode
-    //
-    //    TIM3->SMCR &= ~TIM_SMCR_TS; // ITR0
-    //
-    //    TIM3->CR1 |= TIM_CR1_CEN; //Need Enable in Slave
+    NVIC_EnableIRQ(TIM3_IRQn); //Compare
+
+    TIM3->PSC = (uint16_t) (84 - 1); // Prescaler
+
+    TIM3->EGR = TIM_EGR_UG; // Re-initialize
+
+    //=====================Slave=============================
+
+    TIM3->SMCR |= TIM_SMCR_MSM; // Fo better Sync
+
+    TIM3->SMCR |= (TIM_SMCR_SMS_2 | TIM_SMCR_SMS_0); // Slave 101 Gated Mode
+
+    TIM3->SMCR &= ~TIM_SMCR_TS; // ITR0
+
+    TIM3->CR1 |= TIM_CR1_CEN; //Need Enable in Slave
+    //===================Slave End========================
 }
 
 /*

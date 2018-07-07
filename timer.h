@@ -36,6 +36,7 @@ public:
     void SR_Reset(uint16_t mask);
     
     uint16_t CNT_Read();
+    void CNT_Write(uint16_t data);
 
     uint16_t CCR1_Read();
     void CCR1_Write(uint16_t ccr_data);
