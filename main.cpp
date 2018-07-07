@@ -160,6 +160,7 @@ extern "C" void TIM1_CC_IRQHandler(void) {
 void orange_led_on() {
     orange_led.set();
 }
+
 void orange_led_off() {
     orange_led.reset();
 }
@@ -188,12 +189,12 @@ bool mark = false;
 uint8_t tooth = 0;
 
 void coil_handler(void) {
-    if(tooth==18) {
-        tim3_ch1.CapCom_Write(actual_capture+current_capture);
+    if (tooth == 18) {
+        tim3_ch1.CapCom_Write(actual_capture + current_capture);
         tim3_ch1.IT_Enable();
     }
-    if(tooth==19) {
-        tim3_ch2.CapCom_Write(actual_capture+current_capture);
+    if (tooth == 19) {
+        tim3_ch2.CapCom_Write(actual_capture + current_capture);
         tim3_ch2.IT_Enable();
     }
 }
@@ -202,7 +203,7 @@ void vr_handler(void) {
     if (mark) {
         coil_handler();
         if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
-            sprintf(dma_str, "Cap %u,Tooth %u\r\n",actual_capture,tooth);
+            sprintf(dma_str, "Cap %u,Tooth %u\r\n", actual_capture, tooth);
             dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
             dma1_ch6.enable();
         }
@@ -213,37 +214,37 @@ void vr_handler(void) {
                 tim1_ch2.IT_Enable();
                 tooth++;
             }
-            break;
+                break;
             case 58:
             {
                 tim1_ch2.CapCom_Write((uint16_t) (actual_capture + current_capture));
                 tim1_ch2.IT_Enable();
                 tooth++;
             }
-            break;
+                break;
             case 60:
             {
                 TIM1->EGR = TIM_EGR_CC4G; //Call Stop if Mark Missed
             }
-            break;
+                break;
             default:
             {
                 tooth++;
             }
-            break;
+                break;
         }
     }
 }
 
 void tim1_ch1_capture(void) {
-    previous_capture = current_capture; //Set Previous from Current
-    current_capture = tim1_ch1.CapCom_Read(); //Set Current
-    actual_capture = current_capture - previous_capture; //Calc Actual
-    mark_compare = (uint32_t)((actual_capture*2)+(actual_capture/2)); //Calc MARK
-    tim1_ch4.CapCom_Write(0xffff + current_capture); //Set Stop
     if (tim1.State()) {
-        if(mark_compare < 0xffff) {
-            tim1_ch3.CapCom_Write((uint16_t)(mark_compare + current_capture)); //Set Mark
+        previous_capture = current_capture; //Set Previous from Current
+        current_capture = tim1_ch1.CapCom_Read(); //Set Current
+        actual_capture = current_capture - previous_capture; //Calc Actual
+        mark_compare = (uint32_t) ((actual_capture * 2)+(actual_capture / 2)); //Calc MARK
+        tim1_ch4.CapCom_Write(0xffff + current_capture); //Set Stop
+        if (mark_compare < 0xffff) {
+            tim1_ch3.CapCom_Write((uint16_t) (mark_compare + current_capture)); //Set Mark
             tim1_ch3.IT_Enable(); //Enable Mark
         }
         vr_handler();
@@ -271,14 +272,14 @@ void tim1_ch4_stop_compare(void) {
     tim1.Disable(); //Disable Timer
     tim1.CNT_Write(0); //Reset Timer
     tim3.CNT_Write(0); //Reset Slave Timer
-    
+
     previous_capture = 0;
     current_capture = 0;
     actual_capture = 0;
     mark_compare = 0;
     mark = false;
     tooth = 0;
-    
+
     red_led.set(); //stop led
     green_led.reset(); //mark led
     blue_led.reset(); //58 59 led
