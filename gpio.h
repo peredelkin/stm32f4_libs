@@ -34,8 +34,14 @@ public:
     void odata_reset(uint32_t odata);
     void odata_toggle(uint32_t odata);
     uint32_t odata_read();
-    void obit_set(uint16_t obit);
-    void obit_reset(uint16_t obit);
+
+    void obit_set(uint16_t obit) {
+        gpio_port->BSRRL = obit;
+    }
+
+    void obit_reset(uint16_t obit) {
+        gpio_port->BSRRH = obit;
+    }
     void lock_set(uint32_t lock);
     void lock_reset(uint32_t lock);
     void alt_func_set(uint32_t n_alt_func, uint32_t alt_func);

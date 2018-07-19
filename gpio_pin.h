@@ -32,8 +32,14 @@ public:
     bool read_in();
     void write_out(bool state);
     bool read_out();
-    void set();
-    void reset();
+
+    void set() {
+        obit_set(base_mask);
+    }
+
+    void reset() {
+        obit_reset(base_mask);
+    }
     void toggle();
     void alternate(uint32_t altfunc);
     void alternate();

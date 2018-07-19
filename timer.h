@@ -20,37 +20,94 @@ class timer_16 {
 private:
     TIM_TypeDef* TIM;
 public:
-    uint16_t CR1_Read(uint16_t mask);
-    void CR1_Set(uint16_t mask);
-    void CR1_Reset(uint16_t mask);
-    
-    uint16_t State();
-    void Enable();
-    void Disable();
 
-    uint16_t DIER_Read(uint16_t mask);
-    void DIER_Set(uint16_t mask);
-    void DIER_Reset(uint16_t mask);
+    uint16_t CR1_Read(uint16_t mask) {
+        return (TIM->CR1 & mask);
+    }
 
-    uint16_t SR_Read(uint16_t mask);
-    void SR_Reset(uint16_t mask);
-    
-    uint16_t CNT_Read();
-    void CNT_Write(uint16_t data);
+    void CR1_Set(uint16_t mask) {
+        TIM->CR1 |= mask;
+    }
 
-    uint16_t CCR1_Read();
-    void CCR1_Write(uint16_t ccr_data);
+    void CR1_Reset(uint16_t mask) {
+        TIM->CR1 &= ~mask;
+    }
 
-    uint16_t CCR2_Read();
-    void CCR2_Write(uint16_t ccr_data);
+    uint16_t State() {
+        return (TIM->CR1 & TIM_CR1_CEN);
+    }
 
-    uint16_t CCR3_Read();
-    void CCR3_Write(uint16_t ccr_data);
+    void Enable() {
+        TIM->CR1 |= TIM_CR1_CEN;
+    }
 
-    uint16_t CCR4_Read();
-    void CCR4_Write(uint16_t ccr_data);
+    void Disable() {
+        TIM->CR1 &= ~TIM_CR1_CEN;
+    }
 
-    timer_16(TIM_TypeDef* TIM_Set);
+    uint16_t DIER_Read(uint16_t mask) {
+        return (TIM->DIER & mask);
+    }
+
+    void DIER_Set(uint16_t mask) {
+        TIM->DIER |= mask;
+    }
+
+    void DIER_Reset(uint16_t mask) {
+        TIM->DIER &= ~mask;
+    }
+
+    uint16_t SR_Read(uint16_t mask) {
+        return (TIM->SR & mask);
+    }
+
+    void SR_Reset(uint16_t mask) {
+        TIM->SR &= ~mask;
+    }
+
+    uint16_t CNT_Read() {
+        return TIM->CNT;
+    }
+
+    void CNT_Write(uint16_t data) {
+        TIM->CNT = data;
+    }
+
+    uint16_t CCR1_Read() {
+        return TIM->CCR1;
+    }
+
+    void CCR1_Write(uint16_t ccr_data) {
+        TIM->CCR1 = ccr_data;
+    }
+
+    uint16_t CCR2_Read() {
+        return TIM->CCR2;
+    }
+
+    void CCR2_Write(uint16_t ccr_data) {
+        TIM->CCR2 = ccr_data;
+    }
+
+    uint16_t CCR3_Read() {
+        return TIM->CCR3;
+    }
+
+    void CCR3_Write(uint16_t ccr_data) {
+        TIM->CCR3 = ccr_data;
+    }
+
+    uint16_t CCR4_Read() {
+        return TIM->CCR4;
+    }
+
+    void CCR4_Write(uint16_t ccr_data) {
+        TIM->CCR4 = ccr_data;
+    }
+
+    timer_16(TIM_TypeDef* TIM_Set) {
+        TIM = TIM_Set;
+    }
 };
 
 #endif /* TIMER_H */

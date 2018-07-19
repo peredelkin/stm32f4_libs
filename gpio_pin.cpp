@@ -66,14 +66,6 @@ bool pin::read_out() {
     else return 0;
 }
 
-void pin::set() {
-    obit_set(base_mask);
-}
-
-void pin::reset() {
-    obit_reset(base_mask);
-}
-
 void pin::toggle() {
     odata_toggle(base_mask);
 }

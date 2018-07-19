@@ -62,14 +62,6 @@ uint32_t gpio::odata_read() {
     return gpio_port->ODR;
 }
 
-void gpio::obit_set(uint16_t obit) {
-    gpio_port->BSRRL = obit;
-}
-
-void gpio::obit_reset(uint16_t obit) {
-    gpio_port->BSRRH = obit;
-}
-
 void gpio::lock_set(uint32_t lock) {
     gpio_port->LCKR |= lock;
 }
