@@ -212,7 +212,7 @@ void gap_search(uint16_t capture_time, gap_search_t* gap_search_struct, gap_chec
     gap_search_struct->tnbm_w = capture_time; //Cap to 0
     if (gap_search_struct->B_bm1 == false) {
         if (((gap_search_struct->tnbm1_w / 2) > gap_search_struct->tnbm_w) &&
-                ((gap_search_struct->tnbm1_w / 2) > gap_search_struct->tnbm2_w)) { //Check frame for (tnbm2_w < tnbm1_w > tnbm_w)
+                ((gap_search_struct->tnbm1_w / 2) > gap_search_struct->tnbm2_w)) { //(tnbm2_w < tnbm1_w > tnbm_w)
             gap_search_struct->B_bm1 = true;
             gap_check_struct->R_syn = true;
         }
@@ -235,6 +235,7 @@ void gap_check(gap_search_t* gap_search_struct, gap_check_t * gap_check_struct) 
     if (gap_check_struct->R_syn == true) {
         gap_check_struct->zztab[0] = gap_search_struct->tnbm_w;
         gap_check_struct->zztabptr = 1;
+        gap_check_struct->B_zztab = true;
         gap_check_struct->R_syn = false;
     }
 
@@ -254,7 +255,7 @@ void gap_check(gap_search_t* gap_search_struct, gap_check_t * gap_check_struct) 
     }
 
     if (((gap_check_struct->zztab[0] / 2) > gap_check_struct->zztab[SY_ZSGMT - 1]) &&
-            ((gap_check_struct->zztab[0] / 2) > gap_check_struct->zztab[1])) {
+            ((gap_check_struct->zztab[0] / 2) > gap_check_struct->zztab[1])) { //(zztab[-1] < zztab[0] > zztab[1])
         gap_check_struct->check_ok = true;
         blue_led.set();
     }
