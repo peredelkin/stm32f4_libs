@@ -173,30 +173,16 @@ extern "C" void TIM3_IRQHandler(void) {
 
 //uint16_t actual_capture_print = 0;
 
-uint16_t current_capture = 0;
+volatile uint16_t current_capture = 0;
+volatile uint16_t last_capture = 0;
 
 typedef struct {
     volatile uint16_t tnbm2_w;
     volatile uint16_t tnbm1_w;
     volatile uint16_t tnbm_w;
-    volatile uint16_t last;
 }tooth_times_t;
 
 tooth_times_t Tooth_Times;
-
-void ggdpg_tooth_times_init(tooth_times_t *tooth_times_struct) {
-    tooth_times_struct->last = 0;
-    tooth_times_struct->tnbm1_w = 0xffff;
-    tooth_times_struct->tnbm2_w = 0xffff;
-    tooth_times_struct->tnbm_w = 0xffff;
-}
-
-inline void ggdpg_tooth_times(uint16_t time_input,tooth_times_t *tooth_times_struct) {
-    tooth_times_struct->tnbm2_w = tooth_times_struct->tnbm1_w;
-    tooth_times_struct->tnbm1_w = tooth_times_struct->tnbm_w;
-    tooth_times_struct->tnbm_w = time_input - tooth_times_struct->last;
-    tooth_times_struct->last = time_input;
-}
 
 typedef struct {
     volatile bool B_bm1;
@@ -204,39 +190,115 @@ typedef struct {
 
 gap_search_t Gap_Search;
 
-void ggdpg_gap_search_init(gap_search_t* gap_search_struct) {
-    gap_search_struct->B_bm1 = false;
-    blue_led.reset(); //just for test
+#define SY_ZSGMT 58 //system constant segment length in camshaft teeth
+
+typedef struct {
+    volatile bool B_zztab;
+    volatile uint8_t zztabptr;
+    volatile bool B_bm;
+    volatile uint16_t zztab[SY_ZSGMT];
+}zztab_store_t;
+
+zztab_store_t Zztab_Store;
+
+typedef struct {
+    bool check_ok;
+    bool one_missed;
+    bool one_to_much;
+} gap_check_t;
+
+gap_check_t Gap_Check;
+
+void ggdpg_zztab_store_init(zztab_store_t* zztab_store_struct) {
+    zztab_store_struct->B_zztab = false;
+    zztab_store_struct->zztabptr = 2;
+    zztab_store_struct->B_bm = false;
 }
 
-inline void ggdpg_gap_search(gap_search_t* gap_search_struct, tooth_times_t *tooth_times_struct) {
-    //if (!(gap_search_struct->B_bm1)) {
-    blue_led.reset(); //just for test
-    uint16_t gap = tooth_times_struct->tnbm1_w / 2;
-    if ( gap > tooth_times_struct->tnbm_w) {
-        if (gap > tooth_times_struct->tnbm2_w) {
-            gap_search_struct->B_bm1 = true;
-            blue_led.set(); //just for test
+void ggdpg_zztab_store(zztab_store_t* zztab_store_struct,tooth_times_t* tooth_times_struct,gap_search_t* gap_search_struct) {
+    if(gap_search_struct->B_bm1) {
+        if(zztab_store_struct->B_bm) {
+            zztab_store_struct->zztab[zztab_store_struct->zztabptr] = tooth_times_struct->tnbm_w; //current capture time
+            if(zztab_store_struct->zztabptr == (SY_ZSGMT-1)) {
+                zztab_store_struct->B_zztab = true;
+                zztab_store_struct->zztabptr = 0;
+                blue_led.set(); //just for test
+            } else {
+                zztab_store_struct->zztabptr = zztab_store_struct->zztabptr + 1;
+            }
+        } else {
+            zztab_store_struct->zztab[0] = tooth_times_struct->tnbm1_w; // 1st tooth with 3T
+            zztab_store_struct->zztab[1] = tooth_times_struct->tnbm_w; // 2nd tooth with 1T (current capture time)
+            zztab_store_struct->B_bm = true;
+        }
+    } else {
+        if(zztab_store_struct->B_bm) {
+            ggdpg_zztab_store_init(zztab_store_struct);
         }
     }
-    //}
+}
+
+void ggdpg_tooth_times_shift_init(tooth_times_t *tooth_times_struct) {
+    tooth_times_struct->tnbm1_w = 0xffff;
+    tooth_times_struct->tnbm2_w = 0xffff;
+    tooth_times_struct->tnbm_w = 0xffff;
+}
+
+void ggdpg_tooth_times_shift(tooth_times_t *tooth_times_struct,uint16_t capture_time) {
+    tooth_times_struct->tnbm2_w = tooth_times_struct->tnbm1_w;
+    tooth_times_struct->tnbm1_w = tooth_times_struct->tnbm_w;
+    tooth_times_struct->tnbm_w = capture_time;
+}
+
+void ggdpg_gap_search_init(gap_search_t* gap_search_struct) {
+    gap_search_struct->B_bm1 = false;
+}
+
+void ggdpg_gap_search(gap_search_t* gap_search_struct, tooth_times_t *tooth_times_struct) {
+    if (gap_search_struct->B_bm1) {
+        // (!)
+    } else {
+        uint16_t gap = tooth_times_struct->tnbm1_w / 2;
+        if (gap > tooth_times_struct->tnbm_w) {
+            if (gap > tooth_times_struct->tnbm2_w) {
+                gap_search_struct->B_bm1 = true;
+                blue_led.set(); //just for test
+            }
+        }
+    }
+}
+
+void  ggdpg_gap_check_init(gap_check_t* gap_check_struct) {
+    gap_check_struct->check_ok = false;
+    gap_check_struct->one_missed = false;
+    gap_check_struct->one_to_much = false;
 }
 
 void GGDPG_init() {
-    ggdpg_tooth_times_init(&Tooth_Times);
+    current_capture = 0;
+    last_capture = 0;
+    
+    ggdpg_zztab_store_init(&Zztab_Store);
+    ggdpg_tooth_times_shift_init(&Tooth_Times);
     ggdpg_gap_search_init(&Gap_Search);
+    ggdpg_gap_check_init(&Gap_Check);
+    
+    blue_led.reset(); //just for test
 }
 
-inline void GGDPG() {
-    ggdpg_tooth_times(current_capture,&Tooth_Times);
+void GGDPG(uint16_t capture_time) {
+    blue_led.reset(); //just for test
+    ggdpg_tooth_times_shift(&Tooth_Times,capture_time);
     ggdpg_gap_search(&Gap_Search,&Tooth_Times);
+    ggdpg_zztab_store(&Zztab_Store,&Tooth_Times,&Gap_Search);
 }
 
-inline void tim1_ch1_capture(void) {
+void tim1_ch1_capture(void) {
+    last_capture = current_capture;
     current_capture = tim1_ch1.CapCom_Read(); //Set Current
     tim1_ch4.CapCom_Write((0xffff) + current_capture); //Set Stop
     if (tim1.State()) {
-        GGDPG();
+        GGDPG(current_capture-last_capture);
     } else {
         tim1.Enable(); //Enable Timer
         tim1_ch4.IT_Enable(); //Enable STOP
@@ -244,16 +306,14 @@ inline void tim1_ch1_capture(void) {
     }
 }
 
-inline void tim1_ch4_stop_compare(void) {
+void tim1_ch4_stop_compare(void) {
     tim1_ch1.IT_Disable(); //Capture Interrupt Disable
     
     tim1.Disable(); //Disable Timer
     tim1.CNT_Write(0); //Reset Timer
     tim3.CNT_Write(0); //Reset Slave Timer
     
-    current_capture = 0;
-    
-    GGDPG_init();
+    GGDPG_init(); //Re init
     
     red_led.set(); //stop led
     
@@ -285,8 +345,9 @@ void init_tmr1() {
     TIM1->SMCR &= ~TIM_SMCR_TS; // ITR0
 
     //=================Master End=====================
-
-    tim1_ch1.IT_Enable(); //Interrupt Enable
+    
+    tim1_ch4.IT_Enable(); //STOP Interrupt Enable
+    tim1.Enable(); //Enable Timer
 }
 
 void init_tmr3() {
