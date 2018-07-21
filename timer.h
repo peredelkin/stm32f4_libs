@@ -64,6 +64,10 @@ public:
     void SR_Reset(uint16_t mask) {
         TIM->SR &= ~mask;
     }
+    
+    void EGR_Set(uint16_t mask) {
+        TIM->EGR = mask;
+    }
 
     uint16_t CNT_Read() {
         return TIM->CNT;

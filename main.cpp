@@ -56,9 +56,9 @@ void init_gpio() {
     green_led.mode(GPIO_MODER_MODER12_0);
 
     //Uart
-//    pin usart2_tx(GPIOA, 2);
-//    usart2_tx.mode(GPIO_MODER_MODER2_1);
-//    usart2_tx.alternate((0b0111 << ((2 % 8)*4)));
+    //    pin usart2_tx(GPIOA, 2);
+    //    usart2_tx.mode(GPIO_MODER_MODER2_1);
+    //    usart2_tx.alternate((0b0111 << ((2 % 8)*4)));
 
     //Capture TIMER
     pin tim1_cap1_pin(GPIOA, 8); // PA8 TIM1_CH1
@@ -90,9 +90,9 @@ void init_gpio() {
 extern "C" void DMA1_Stream6_IRQHandler(void) {
     if (DMA1->HISR & DMA_HISR_TCIF6) {
         DMA1->HIFCR = DMA_HIFCR_CTCIF6;
-//        dma1_ch6.disable();
-//        usart2.flag_tc_reset();
-//        actual_capture_print_flag = false;
+        //        dma1_ch6.disable();
+        //        usart2.flag_tc_reset();
+        //        actual_capture_print_flag = false;
     }
     NVIC_ClearPendingIRQ(DMA1_Stream6_IRQn);
 }
@@ -176,121 +176,107 @@ extern "C" void TIM3_IRQHandler(void) {
 volatile uint16_t current_capture = 0;
 volatile uint16_t last_capture = 0;
 
-typedef struct {
-    volatile uint16_t tnbm2_w;
-    volatile uint16_t tnbm1_w;
-    volatile uint16_t tnbm_w;
-}tooth_times_t;
-
-tooth_times_t Tooth_Times;
-
-typedef struct {
-    volatile bool B_bm1;
-}gap_search_t;
-
-gap_search_t Gap_Search;
-
 #define SY_ZSGMT 58 //system constant segment length in camshaft teeth
 
 typedef struct {
-    volatile bool B_zztab;
-    volatile uint8_t zztabptr;
-    volatile bool B_bm;
-    volatile uint16_t zztab[SY_ZSGMT];
-}zztab_store_t;
+    uint16_t tnbm_w; //1st shift
+    uint16_t tnbm1_w; //2nd shift
+    uint16_t tnbm2_w; //3rd shift
+    bool B_bm1; //gap detected
+} gap_search_t;
 
-zztab_store_t Zztab_Store;
+gap_search_t Gap_Search;
 
 typedef struct {
-    bool check_ok;
-    bool one_missed;
+    uint16_t zztab[SY_ZSGMT]; //Tooth time table
+    uint8_t zztabptr; //Pointer to last entry in the table
+    bool R_syn;
+    bool B_zztab; //Set as soon as the tooth time table is completely filled
     bool one_to_much;
+    bool one_missed;
+    bool check_ok;
 } gap_check_t;
 
 gap_check_t Gap_Check;
 
-void ggdpg_zztab_store_init(zztab_store_t* zztab_store_struct) {
-    zztab_store_struct->B_zztab = false;
-    zztab_store_struct->zztabptr = 2;
-    zztab_store_struct->B_bm = false;
-}
-
-void ggdpg_zztab_store(zztab_store_t* zztab_store_struct,tooth_times_t* tooth_times_struct,gap_search_t* gap_search_struct) {
-    if(gap_search_struct->B_bm1) {
-        if(zztab_store_struct->B_bm) {
-            zztab_store_struct->zztab[zztab_store_struct->zztabptr] = tooth_times_struct->tnbm_w; //current capture time
-            if(zztab_store_struct->zztabptr == (SY_ZSGMT-1)) {
-                zztab_store_struct->B_zztab = true;
-                zztab_store_struct->zztabptr = 0;
-                blue_led.set(); //just for test
-            } else {
-                zztab_store_struct->zztabptr = zztab_store_struct->zztabptr + 1;
-            }
-        } else {
-            zztab_store_struct->zztab[0] = tooth_times_struct->tnbm1_w; // 1st tooth with 3T
-            zztab_store_struct->zztab[1] = tooth_times_struct->tnbm_w; // 2nd tooth with 1T (current capture time)
-            zztab_store_struct->B_bm = true;
-        }
-    } else {
-        if(zztab_store_struct->B_bm) {
-            ggdpg_zztab_store_init(zztab_store_struct);
-        }
-    }
-}
-
-void ggdpg_tooth_times_shift_init(tooth_times_t *tooth_times_struct) {
-    tooth_times_struct->tnbm1_w = 0xffff;
-    tooth_times_struct->tnbm2_w = 0xffff;
-    tooth_times_struct->tnbm_w = 0xffff;
-}
-
-void ggdpg_tooth_times_shift(tooth_times_t *tooth_times_struct,uint16_t capture_time) {
-    tooth_times_struct->tnbm2_w = tooth_times_struct->tnbm1_w;
-    tooth_times_struct->tnbm1_w = tooth_times_struct->tnbm_w;
-    tooth_times_struct->tnbm_w = capture_time;
-}
-
-void ggdpg_gap_search_init(gap_search_t* gap_search_struct) {
+void gap_search_init(gap_search_t* gap_search_struct) {
     gap_search_struct->B_bm1 = false;
+    gap_search_struct->tnbm1_w = 0xffff;
+    gap_search_struct->tnbm2_w = 0xffff;
+    gap_search_struct->tnbm_w = 0xffff;
 }
 
-void ggdpg_gap_search(gap_search_t* gap_search_struct, tooth_times_t *tooth_times_struct) {
-    if (gap_search_struct->B_bm1) {
-        // (!)
-    } else {
-        uint16_t gap = tooth_times_struct->tnbm1_w / 2;
-        if (gap > tooth_times_struct->tnbm_w) {
-            if (gap > tooth_times_struct->tnbm2_w) {
-                gap_search_struct->B_bm1 = true;
-                blue_led.set(); //just for test
-            }
+void gap_search(uint16_t capture_time, gap_search_t* gap_search_struct, gap_check_t * gap_check_struct) {
+    gap_search_struct->tnbm2_w = gap_search_struct->tnbm1_w; //Shift 2nd to 3rd
+    gap_search_struct->tnbm1_w = gap_search_struct->tnbm_w; //Shift 1st to 2nd
+    gap_search_struct->tnbm_w = capture_time; //Cap to 0
+    if (gap_search_struct->B_bm1 == false) {
+        if (((gap_search_struct->tnbm1_w / 2) > gap_search_struct->tnbm_w) &&
+                ((gap_search_struct->tnbm1_w / 2) > gap_search_struct->tnbm2_w)) { //Check frame for (tnbm2_w < tnbm1_w > tnbm_w)
+            gap_search_struct->B_bm1 = true;
+            gap_check_struct->R_syn = true;
         }
     }
 }
 
-void  ggdpg_gap_check_init(gap_check_t* gap_check_struct) {
+void gap_check_init(gap_check_t * gap_check_struct) {
+    gap_check_struct->R_syn = false;
+    gap_check_struct->B_zztab = false;
     gap_check_struct->check_ok = false;
     gap_check_struct->one_missed = false;
     gap_check_struct->one_to_much = false;
+    gap_check_struct->zztabptr = 0;
+    gap_check_struct->zztab[SY_ZSGMT - 1] = 0xffff;
+    gap_check_struct->zztab[0] = 0xffff;
+    gap_check_struct->zztab[1] = 0xffff;
+}
+
+void gap_check(gap_search_t* gap_search_struct, gap_check_t * gap_check_struct) {
+    if (gap_check_struct->R_syn == true) {
+        gap_check_struct->zztab[0] = gap_search_struct->tnbm_w;
+        gap_check_struct->zztabptr = 1;
+        gap_check_struct->R_syn = false;
+    }
+
+    gap_check_struct->zztab[gap_check_struct->zztabptr] = gap_search_struct->tnbm_w;
+
+    if (gap_check_struct->zztabptr == SY_ZSGMT - 1) {
+
+        gap_check_struct->zztabptr = 0;
+
+        if (gap_search_struct->B_bm1) {
+            gap_search_struct->B_bm1 = false;
+        } else {
+            tim1.EGR_Set(TIM_EGR_CC4G); //Gen STOP
+        }
+    } else {
+        gap_check_struct->zztabptr = gap_check_struct->zztabptr + 1;
+    }
+
+    if (((gap_check_struct->zztab[0] / 2) > gap_check_struct->zztab[SY_ZSGMT - 1]) &&
+            ((gap_check_struct->zztab[0] / 2) > gap_check_struct->zztab[1])) {
+        gap_check_struct->check_ok = true;
+        blue_led.set();
+    }
 }
 
 void GGDPG_init() {
     current_capture = 0;
     last_capture = 0;
-    
-    ggdpg_zztab_store_init(&Zztab_Store);
-    ggdpg_tooth_times_shift_init(&Tooth_Times);
-    ggdpg_gap_search_init(&Gap_Search);
-    ggdpg_gap_check_init(&Gap_Check);
-    
+
+    gap_search_init(&Gap_Search);
+    gap_check_init(&Gap_Check);
+    //call here
+
     blue_led.reset(); //just for test
 }
 
 void GGDPG(uint16_t capture_time) {
     blue_led.reset(); //just for test
-    ggdpg_tooth_times_shift(&Tooth_Times,capture_time);
-    ggdpg_gap_search(&Gap_Search,&Tooth_Times);
-    ggdpg_zztab_store(&Zztab_Store,&Tooth_Times,&Gap_Search);
+
+    gap_search(capture_time, &Gap_Search, &Gap_Check);
+    gap_check(&Gap_Search, &Gap_Check);
+    //call here
 }
 
 void tim1_ch1_capture(void) {
@@ -298,7 +284,7 @@ void tim1_ch1_capture(void) {
     current_capture = tim1_ch1.CapCom_Read(); //Set Current
     tim1_ch4.CapCom_Write((0xffff) + current_capture); //Set Stop
     if (tim1.State()) {
-        GGDPG(current_capture-last_capture);
+        GGDPG(current_capture - last_capture);
     } else {
         tim1.Enable(); //Enable Timer
         tim1_ch4.IT_Enable(); //Enable STOP
@@ -308,15 +294,15 @@ void tim1_ch1_capture(void) {
 
 void tim1_ch4_stop_compare(void) {
     tim1_ch1.IT_Disable(); //Capture Interrupt Disable
-    
+
     tim1.Disable(); //Disable Timer
     tim1.CNT_Write(0); //Reset Timer
     tim3.CNT_Write(0); //Reset Slave Timer
-    
+
     GGDPG_init(); //Re init
-    
+
     red_led.set(); //stop led
-    
+
     tim1_ch1.IT_Enable(); //Capture Interrupt Enable
 }
 
@@ -324,7 +310,7 @@ void init_tmr1() {
     NVIC_EnableIRQ(TIM1_CC_IRQn); // Capture/compare
 
     TIM1->CCMR1 |= TIM_CCMR1_CC1S_0; // Capture TI1
-    
+
     TIM1->CCMR1 |= TIM_CCMR1_IC1F_1; // Filter Fsampling=Fck_int,N=2
 
 
@@ -345,7 +331,7 @@ void init_tmr1() {
     TIM1->SMCR &= ~TIM_SMCR_TS; // ITR0
 
     //=================Master End=====================
-    
+
     tim1_ch4.IT_Enable(); //STOP Interrupt Enable
     tim1.Enable(); //Enable Timer
 }
@@ -375,19 +361,19 @@ void init_tmr3() {
 int main(void) {
     init_rcc();
     init_gpio();
-//    init_usart();
-//    dma_init();
+    //    init_usart();
+    //    dma_init();
     init_tmr3();
     init_tmr1();
     while (1) {
-//        delay_1s();
-//        if (actual_capture_print_flag==true) {
-//            if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
-//                sprintf(dma_str, "RPM %u \r\n", 1000000 / actual_capture_print);
-//                dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
-//                dma1_ch6.enable();
-//            }
-//        }
+        //        delay_1s();
+        //        if (actual_capture_print_flag==true) {
+        //            if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
+        //                sprintf(dma_str, "RPM %u \r\n", 1000000 / actual_capture_print);
+        //                dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
+        //                dma1_ch6.enable();
+        //            }
+        //        }
     }
     return 0;
 }
