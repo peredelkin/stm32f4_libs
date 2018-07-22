@@ -13,8 +13,8 @@
 
 #include <stm32f4xx.h>
 #include <gpio_pin.h>
-//#include <usart.h>
-//#include <dma.h>
+#include <usart.h>
+#include <dma.h>
 #include <stdio.h>
 #include <timer.h>
 #include <timer_event.h>
@@ -55,10 +55,10 @@ void init_gpio() {
     orange_led.mode(GPIO_MODER_MODER13_0);
     green_led.mode(GPIO_MODER_MODER12_0);
 
-    //Uart
-    //    pin usart2_tx(GPIOA, 2);
-    //    usart2_tx.mode(GPIO_MODER_MODER2_1);
-    //    usart2_tx.alternate((0b0111 << ((2 % 8)*4)));
+    //    Uart
+    pin usart2_tx(GPIOA, 2);
+    usart2_tx.mode(GPIO_MODER_MODER2_1);
+    usart2_tx.alternate((0b0111 << ((2 % 8)*4)));
 
     //Capture TIMER
     pin tim1_cap1_pin(GPIOA, 8); // PA8 TIM1_CH1
@@ -67,65 +67,65 @@ void init_gpio() {
     tim1_cap1_pin.alternate((0b0001 << ((8 % 8)*4))); //AF1
 }
 
-//usart::bus usart2(USART2);
+usart::bus usart2(USART2);
 
-//extern "C" void USART2_IRQHandler(void) {
-//    usart2.txe_handler();
-//    NVIC_ClearPendingIRQ(USART2_IRQn);
-//}
+extern "C" void USART2_IRQHandler(void) {
+    usart2.interrupt_txe_handler();
+    NVIC_ClearPendingIRQ(USART2_IRQn);
+}
 
-//void init_usart(void) {
-//
-//    //NVIC_EnableIRQ(USART2_IRQn);
-//
-//    usart2.init(SystemCoreClock / 4, 115200, true, false);
-//}
-//
-//dma::stream dma1_ch6(DMA1_Stream6);
-//
-//char dma_str[50] = "Dma_inited\r\n";
-//
-//volatile bool actual_capture_print_flag = false;
+void init_usart(void) {
+
+    NVIC_EnableIRQ(USART2_IRQn);
+
+    usart2.init(SystemCoreClock / 4, 115200, true, false);
+}
+
+dma::stream dma1_ch6(DMA1_Stream6);
+
+char dma_str[50] = "Dma_inited\r\n";
+
+volatile bool actual_capture_print_flag = false;
 
 extern "C" void DMA1_Stream6_IRQHandler(void) {
     if (DMA1->HISR & DMA_HISR_TCIF6) {
         DMA1->HIFCR = DMA_HIFCR_CTCIF6;
-        //        dma1_ch6.disable();
-        //        usart2.flag_tc_reset();
-        //        actual_capture_print_flag = false;
+        dma1_ch6.disable();
+        usart2.flag_tc_reset();
+        actual_capture_print_flag = false;
     }
     NVIC_ClearPendingIRQ(DMA1_Stream6_IRQn);
 }
 
-//void dma_init(void) {
-//    /* USART2_TX: DMA1, Stream 6, Channel 4 */
-//
-//    NVIC_EnableIRQ(DMA1_Stream6_IRQn);
-//
-//    dma1_ch6.disable();
-//
-//    usart2.dma_tx_disable();
-//
-//    dma1_ch6.ch_sel(dma::CHSEL_4);
-//
-//    dma1_ch6.minc_enable();
-//
-//    dma1_ch6.dir_set(dma::DIR_M_P);
-//
-//    dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
-//
-//    dma1_ch6.periph_addr_set(usart2.data_register_addr());
-//
-//    dma1_ch6.mem_0_addr_set((uint32_t) dma_str);
-//
-//    dma1_ch6.tcie_enable();
-//
-//    usart2.dma_tx_enable();
-//
-//    usart2.flag_tc_reset();
-//
-//    dma1_ch6.enable();
-//}
+void dma_init(void) {
+    /* USART2_TX: DMA1, Stream 6, Channel 4 */
+
+    NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+
+    dma1_ch6.disable();
+
+    usart2.dma_tx_disable();
+
+    dma1_ch6.ch_sel(dma::CHSEL_4);
+
+    dma1_ch6.minc_enable();
+
+    dma1_ch6.dir_set(dma::DIR_M_P);
+
+    dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
+
+    dma1_ch6.periph_addr_set(usart2.data_register_addr());
+
+    dma1_ch6.mem_0_addr_set((uint32_t) dma_str);
+
+    dma1_ch6.tcie_enable();
+
+    usart2.dma_tx_enable();
+
+    usart2.flag_tc_reset();
+
+    dma1_ch6.enable();
+}
 
 void tim1_ch1_capture(void);
 
@@ -171,12 +171,10 @@ extern "C" void TIM3_IRQHandler(void) {
     tim3_ch2.IT_Handler();
 }
 
-//uint16_t actual_capture_print = 0;
-
 volatile uint16_t current_capture = 0;
 volatile uint16_t last_capture = 0;
 
-#define SY_ZSGMT 58 //system constant segment length in camshaft teeth
+#define SY_ZSGMT 60 //system constant segment length in camshaft teeth
 
 typedef struct {
     uint16_t tnbm_w; //1st shift
@@ -210,11 +208,14 @@ void gap_search(uint16_t capture_time, gap_search_t* gap_search_struct, gap_chec
     gap_search_struct->tnbm2_w = gap_search_struct->tnbm1_w; //Shift 2nd to 3rd
     gap_search_struct->tnbm1_w = gap_search_struct->tnbm_w; //Shift 1st to 2nd
     gap_search_struct->tnbm_w = capture_time; //Cap to 0
-    if (gap_search_struct->B_bm1 == false) {
-        if (((gap_search_struct->tnbm1_w / 2) > gap_search_struct->tnbm_w) &&
-                ((gap_search_struct->tnbm1_w / 2) > gap_search_struct->tnbm2_w)) { //(tnbm2_w < tnbm1_w > tnbm_w)
+    if (((gap_search_struct->tnbm1_w / 2) > gap_search_struct->tnbm_w) &&
+            ((gap_search_struct->tnbm1_w / 2) > gap_search_struct->tnbm2_w)) { //(tnbm2_w < tnbm1_w > tnbm_w)
+        blue_led.set();
+        if (gap_search_struct->B_bm1 == false) {
             gap_search_struct->B_bm1 = true;
-            gap_check_struct->R_syn = true;
+            if (gap_check_struct->R_syn == false) {
+                gap_check_struct->R_syn = true;
+            }
         }
     }
 }
@@ -225,41 +226,69 @@ void gap_check_init(gap_check_t * gap_check_struct) {
     gap_check_struct->check_ok = false;
     gap_check_struct->one_missed = false;
     gap_check_struct->one_to_much = false;
-    gap_check_struct->zztabptr = 0;
+    gap_check_struct->zztabptr = 1;
     gap_check_struct->zztab[SY_ZSGMT - 1] = 0xffff;
-    gap_check_struct->zztab[0] = 0xffff;
-    gap_check_struct->zztab[1] = 0xffff;
+    gap_check_struct->zztab[SY_ZSGMT - 2] = 0xffff;
+    gap_check_struct->zztab[SY_ZSGMT - 3] = 0xffff;
 }
 
 void gap_check(gap_search_t* gap_search_struct, gap_check_t * gap_check_struct) {
-    if (gap_check_struct->R_syn == true) {
-        gap_check_struct->zztab[0] = gap_search_struct->tnbm_w;
-        gap_check_struct->zztabptr = 1;
-        gap_check_struct->B_zztab = true;
-        gap_check_struct->R_syn = false;
-    }
+    if (gap_check_struct->B_zztab == false) {
 
-    gap_check_struct->zztab[gap_check_struct->zztabptr] = gap_search_struct->tnbm_w;
-
-    if (gap_check_struct->zztabptr == SY_ZSGMT - 1) {
-
-        gap_check_struct->zztabptr = 0;
-
-        if (gap_search_struct->B_bm1) {
-            gap_search_struct->B_bm1 = false;
-        } else {
-            tim1.EGR_Set(TIM_EGR_CC4G); //Gen STOP
+        gap_check_struct->zztab[gap_check_struct->zztabptr] = gap_search_struct->tnbm_w;
+        
+        if (gap_check_struct->R_syn == true) {
+            gap_check_struct->zztab[0] = gap_check_struct->zztab[gap_check_struct->zztabptr - 1];
+            gap_check_struct->zztab[1] = gap_check_struct->zztab[gap_check_struct->zztabptr];
+            gap_check_struct->zztabptr = 1;
+            gap_check_struct->R_syn = false;
         }
-    } else {
-        gap_check_struct->zztabptr = gap_check_struct->zztabptr + 1;
-    }
 
-    if (((gap_check_struct->zztab[0] / 2) > gap_check_struct->zztab[SY_ZSGMT - 1]) &&
-            ((gap_check_struct->zztab[0] / 2) > gap_check_struct->zztab[1])) { //(zztab[-1] < zztab[0] > zztab[1])
-        gap_check_struct->check_ok = true;
-        blue_led.set();
+        if (gap_check_struct->zztabptr == (SY_ZSGMT - 1)) {
+            gap_check_struct->zztabptr = 1;
+            if (gap_search_struct->B_bm1) {
+                gap_check_struct->B_zztab = true;
+            } else {
+                tim1.EGR_Set(TIM_EGR_CC4G); //gen stop
+            }
+        } else {
+            gap_check_struct->zztabptr = gap_check_struct->zztabptr + 1;
+        }
+
+        if (gap_check_struct->B_zztab == true) {
+            if ((gap_check_struct->zztab[SY_ZSGMT - 3] / 2) > gap_check_struct->zztab[SY_ZSGMT - 2]) {
+                gap_check_struct->one_missed = true;
+                orange_led.set();
+                sprintf(dma_str, "ONE MISSED\r\n");
+            } else {
+                if (((gap_check_struct->zztab[SY_ZSGMT - 2] / 2) > gap_check_struct->zztab[SY_ZSGMT - 3]) &&
+                        ((gap_check_struct->zztab[SY_ZSGMT - 2] / 2) > gap_check_struct->zztab[SY_ZSGMT - 1])) {
+                    gap_check_struct->check_ok = true;
+                    green_led.set();
+                    sprintf(dma_str, "CHECK OK\r\n");
+                } else {
+                    if ((gap_check_struct->zztab[SY_ZSGMT - 1] / 2) > gap_check_struct->zztab[SY_ZSGMT - 2]) {
+                        gap_check_struct->one_to_much = true;
+                        orange_led.set();
+                        sprintf(dma_str, "ONE TO MUCH\r\n");
+                    }
+                }
+            }
+            if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
+                dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
+                dma1_ch6.enable();
+            }
+            gap_search_struct->B_bm1 = false;
+            gap_check_struct->B_zztab = false;
+        }
     }
 }
+
+//if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
+//                sprintf(dma_str, "-1:%u\r\n0:%u\r\n1:%u\r\n", gap_check_struct->zztab[SY_ZSGMT - 3], gap_check_struct->zztab[SY_ZSGMT - 2], gap_check_struct->zztab[SY_ZSGMT - 1]);
+//                dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
+//                dma1_ch6.enable();
+//            }
 
 void GGDPG_init() {
     current_capture = 0;
@@ -269,11 +298,16 @@ void GGDPG_init() {
     gap_check_init(&Gap_Check);
     //call here
 
-    blue_led.reset(); //just for test
+    orange_led.reset();
+    green_led.reset();
+    blue_led.reset();
+    red_led.set();
 }
 
 void GGDPG(uint16_t capture_time) {
-    blue_led.reset(); //just for test
+    blue_led.reset();
+    green_led.reset();
+    orange_led.reset();
 
     gap_search(capture_time, &Gap_Search, &Gap_Check);
     gap_check(&Gap_Search, &Gap_Check);
@@ -302,8 +336,6 @@ void tim1_ch4_stop_compare(void) {
 
     GGDPG_init(); //Re init
 
-    red_led.set(); //stop led
-
     tim1_ch1.IT_Enable(); //Capture Interrupt Enable
 }
 
@@ -315,7 +347,7 @@ void init_tmr1() {
     TIM1->CCMR1 |= TIM_CCMR1_IC1F_1; // Filter Fsampling=Fck_int,N=2
 
 
-    TIM1->CCER |= TIM_CCER_CC1P; // Falling edge
+    TIM1->CCER = TIM_CCER_CC1P; // !Falling edge
 
     TIM1->CCER |= TIM_CCER_CC1E; // Capture Enable
 
@@ -362,19 +394,17 @@ void init_tmr3() {
 int main(void) {
     init_rcc();
     init_gpio();
-    //    init_usart();
-    //    dma_init();
+    init_usart();
+    dma_init();
     init_tmr3();
     init_tmr1();
     while (1) {
-        //        delay_1s();
-        //        if (actual_capture_print_flag==true) {
-        //            if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
-        //                sprintf(dma_str, "RPM %u \r\n", 1000000 / actual_capture_print);
-        //                dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
-        //                dma1_ch6.enable();
-        //            }
-        //        }
+//        delay_1s();
+//        if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
+//            sprintf(dma_str, "RPM %u \r\n", 100);
+//            dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
+//            dma1_ch6.enable();
+//        }
     }
     return 0;
 }
