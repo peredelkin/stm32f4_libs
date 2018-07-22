@@ -259,24 +259,19 @@ void gap_check(gap_search_t* gap_search_struct, gap_check_t * gap_check_struct) 
             if ((gap_check_struct->zztab[SY_ZSGMT - 3] / 2) > gap_check_struct->zztab[SY_ZSGMT - 2]) {
                 gap_check_struct->one_missed = true;
                 orange_led.set();
-                sprintf(dma_str, "ONE MISSED\r\n");
             } else {
                 if (((gap_check_struct->zztab[SY_ZSGMT - 2] / 2) > gap_check_struct->zztab[SY_ZSGMT - 3]) &&
                         ((gap_check_struct->zztab[SY_ZSGMT - 2] / 2) > gap_check_struct->zztab[SY_ZSGMT - 1])) {
                     gap_check_struct->check_ok = true;
                     green_led.set();
-                    sprintf(dma_str, "CHECK OK\r\n");
                 } else {
                     if ((gap_check_struct->zztab[SY_ZSGMT - 1] / 2) > gap_check_struct->zztab[SY_ZSGMT - 2]) {
                         gap_check_struct->one_to_much = true;
                         orange_led.set();
-                        sprintf(dma_str, "ONE TO MUCH\r\n");
+                    } else {
+                        tim1.EGR_Set(TIM_EGR_CC4G); //gen stop
                     }
                 }
-            }
-            if (!(DMA1->HISR & DMA_HISR_TCIF6)) {
-                dma1_ch6.numb_of_data_set(strlen((const char*) dma_str));
-                dma1_ch6.enable();
             }
             gap_search_struct->B_bm1 = false;
             gap_check_struct->B_zztab = false;
